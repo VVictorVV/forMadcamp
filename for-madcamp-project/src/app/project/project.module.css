@@ -1,0 +1,61 @@
+.container {
+  min-height: calc(100vh - 60px);
+  padding: 2rem 10%; /* 상단 여백 축소 */
+  background-color: #f4f4f9;
+}
+
+.pageTitle {
+  font-size: 3rem;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 2rem;
+}
+
+.cardContainer {
+  display: flex;
+  width: 100%;
+  height: 600px; /* 세로 길이 증가 */
+  gap: 1rem;
+}
+
+.card {
+  flex: 1;
+  position: relative;
+  background-color: #ffffff; /* 배경 흰색으로 변경 */
+  background-size: cover;
+  background-position: center;
+  border-radius: 15px; /* 둥근 모서리 제거 */
+  color: #333; /* 텍스트 색상 변경 */
+  cursor: pointer;
+  overflow: hidden;
+  transition: flex 0.3s ease-in-out;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1); /* 그림자 연하게 조정 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #e0e0e0; /* 연한 테두리 추가 */
+}
+
+.card:hover {
+  flex: 4;
+}
+
+.title {
+  font-size: 2rem;
+  font-weight: bold;
+  /* text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.6); */ /* 텍스트 그림자 제거 */
+  opacity: 1;
+  transition: opacity 0.3s ease-in-out;
+}
+
+.card:not(:hover) .title {
+  opacity: 0.5;
+}
+
+/* 임시 배경색 제거 */
+/*
+.card:nth-child(1) { background-color: #8e44ad; }
+.card:nth-child(2) { background-color: #2980b9; }
+.card:nth-child(3) { background-color: #27ae60; }
+.card:nth-child(4) { background-color: #f39c12; }
+*/ 

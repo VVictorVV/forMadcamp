@@ -27,16 +27,26 @@
 
 .navLinks {
   display: flex;
-  gap: 2rem;
+  gap: 1rem; /* 탭 사이 간격 축소 */
+  align-items: center;
 }
 
 .navLinks a {
   text-decoration: none;
   color: #4b5563;
   font-size: 1rem;
-  font-weight: 500;
+  font-weight: bold; /* 폰트 bold 처리 */
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  transition: all 0.2s ease-in-out;
 }
 
 .navLinks a:hover {
   color: #000000;
+  background-color: #f8f8f8;
+}
+
+.navLinks a.active {
+  color: #B7A400;
+  background-color: #f0f0f0;
 } 
