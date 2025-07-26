@@ -8,7 +8,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem 15%;
+  padding: 1rem 10%;
   z-index: 1000;
   height: 60px;
 }
@@ -16,6 +16,7 @@
 .logoContainer {
   display: flex;
   align-items: center;
+  gap: 1.8rem; /* 로고와 분반 텍스트 사이 간격 증가 */
 }
 
 .logo {
@@ -23,6 +24,12 @@
   font-size: 1.5rem;
   text-decoration: none;
   color: #000;
+}
+
+.userClass {
+  font-size: 1rem; /* 폰트 크기 조정 */
+  font-weight: bold;
+  color: #555;
 }
 
 .navLinks {
@@ -47,6 +54,25 @@
 }
 
 .navLinks a.active {
-  color: #B7A400;
+  color: #003E55; /* 활성 탭 색상 변경 */
   background-color: #f0f0f0;
+}
+
+button.loginButton {
+  background-color: #003E55;
+  color: white;
+  padding: 0.5rem 1.2rem;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: bold;
+  transition: background-color 0.2s;
+  border: none;
+  font-family: inherit;
+  font-size: inherit;
+  cursor: pointer;
+}
+
+a.loginButton:hover {
+  background-color: #002a3a; /* 호버 시 어두운 색으로 변경 */
+  color: white;
 } 
