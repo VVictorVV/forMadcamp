@@ -21,6 +21,8 @@ create table "public"."PROFILES" (
     "class_id" bigint,
     "name" character varying(50),
     "profile_image_uri" text,
+    "instagram_uri" text,
+    "school" character varying(100),
     "created_at" timestamp with time zone default now()
 );
 
@@ -56,11 +58,10 @@ create table "public"."PROJECTS" (
     "project_name" character varying(100) not null,
     "class_id" bigint not null,
     "week_num" integer,
-    "profile_id_1" uuid not null,
-    "profile_id_2" uuid not null,
     "created_at" timestamp with time zone default now(),
     "planning" text,
-    "progress" integer default 0
+    "progress" integer default 0,
+    "representative_image_uri" text
 );
 
 -- SCHEDULES table (unchanged)
@@ -149,6 +150,16 @@ alter table "public"."TOPICS" add constraint "TOPICS_pkey" PRIMARY KEY using ind
 alter table "public"."TOPIC_INTERESTS" add constraint "TOPIC_INTERESTS_pkey" PRIMARY KEY using index "TOPIC_INTERESTS_pkey";
 alter table "public"."VOTES" add constraint "VOTES_pkey" PRIMARY KEY using index "VOTES_pkey";
 
+-- 5. PARTICIPATOR 테이블 생성 (이제 FK가 정상적으로 동작)
+create table "public"."PARTICIPATOR" (
+  project_id bigint not null,
+  profile_id uuid not null,
+  role character varying(50),
+  primary key (project_id, profile_id),
+  foreign key (project_id) references "public"."PROJECTS"(project_id) on delete cascade,
+  foreign key (profile_id) references "public"."PROFILES"(id) on delete cascade
+);
+
 -- Add foreign key constraints
 alter table "public"."CAMP_CLASSES" add constraint "CAMP_CLASSES_season_id_fkey" FOREIGN KEY (season_id) REFERENCES "SEASONS"(season_id) not valid;
 alter table "public"."CAMP_CLASSES" validate constraint "CAMP_CLASSES_season_id_fkey";
@@ -173,12 +184,6 @@ alter table "public"."POLL_OPTIONS" validate constraint "POLL_OPTIONS_poll_id_fk
 
 alter table "public"."PROJECTS" add constraint "PROJECTS_class_id_fkey" FOREIGN KEY (class_id) REFERENCES "CAMP_CLASSES"(class_id) not valid;
 alter table "public"."PROJECTS" validate constraint "PROJECTS_class_id_fkey";
-
-alter table "public"."PROJECTS" add constraint "PROJECTS_profile_id_1_fkey" FOREIGN KEY (profile_id_1) REFERENCES "PROFILES"(id) not valid;
-alter table "public"."PROJECTS" validate constraint "PROJECTS_profile_id_1_fkey";
-
-alter table "public"."PROJECTS" add constraint "PROJECTS_profile_id_2_fkey" FOREIGN KEY (profile_id_2) REFERENCES "PROFILES"(id) not valid;
-alter table "public"."PROJECTS" validate constraint "PROJECTS_profile_id_2_fkey";
 
 alter table "public"."SCHEDULES" add constraint "SCHEDULES_class_id_fkey" FOREIGN KEY (class_id) REFERENCES "CAMP_CLASSES"(class_id) not valid;
 alter table "public"."SCHEDULES" validate constraint "SCHEDULES_class_id_fkey";
@@ -518,6 +523,29 @@ grant trigger on table "public"."VOTES" to "service_role";
 grant truncate on table "public"."VOTES" to "service_role";
 grant update on table "public"."VOTES" to "service_role";
 
+-- PARTICIPATOR
+grant delete on table "public"."PARTICIPATOR" to "anon";
+grant insert on table "public"."PARTICIPATOR" to "anon";
+grant references on table "public"."PARTICIPATOR" to "anon";
+grant select on table "public"."PARTICIPATOR" to "anon";
+grant trigger on table "public"."PARTICIPATOR" to "anon";
+grant truncate on table "public"."PARTICIPATOR" to "anon";
+grant update on table "public"."PARTICIPATOR" to "anon";
+grant delete on table "public"."PARTICIPATOR" to "authenticated";
+grant insert on table "public"."PARTICIPATOR" to "authenticated";
+grant references on table "public"."PARTICIPATOR" to "authenticated";
+grant select on table "public"."PARTICIPATOR" to "authenticated";
+grant trigger on table "public"."PARTICIPATOR" to "authenticated";
+grant truncate on table "public"."PARTICIPATOR" to "authenticated";
+grant update on table "public"."PARTICIPATOR" to "authenticated";
+grant delete on table "public"."PARTICIPATOR" to "service_role";
+grant insert on table "public"."PARTICIPATOR" to "service_role";
+grant references on table "public"."PARTICIPATOR" to "service_role";
+grant select on table "public"."PARTICIPATOR" to "service_role";
+grant trigger on table "public"."PARTICIPATOR" to "service_role";
+grant truncate on table "public"."PARTICIPATOR" to "service_role";
+grant update on table "public"."PARTICIPATOR" to "service_role";
+
 -- Create trigger function to handle new user registration
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
@@ -546,4 +574,5 @@ COMMENT ON TABLE public."SCHEDULE_USERS" IS 'User participation in scheduled eve
 COMMENT ON TABLE public."SCRUMS" IS 'Daily scrum entries for projects';
 COMMENT ON TABLE public."TOPICS" IS 'Discussion topics created by users';
 COMMENT ON TABLE public."TOPIC_INTERESTS" IS 'User interest levels in topics';
-COMMENT ON TABLE public."VOTES" IS 'User votes on poll options'; 
+COMMENT ON TABLE public."VOTES" IS 'User votes on poll options';
+COMMENT ON TABLE public."PARTICIPATOR" IS '프로젝트별 참여자(조원) 정보를 저장하는 테이블'; 

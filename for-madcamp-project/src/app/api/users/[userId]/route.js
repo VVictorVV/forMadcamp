@@ -42,6 +42,8 @@ export async function GET(req, { params }) {
         id,
         name,
         profile_image_uri,
+        instagram_uri,
+        school,
         class_id
       `)
       .eq('id', userId)
@@ -134,6 +136,8 @@ export async function GET(req, { params }) {
       name: profile.name,
       email: user.email, // auth.users에서 이메일 가져오기
       profileImageUri: profile.profile_image_uri,
+      instagramUri: profile.instagram_uri,
+      school: profile.school,
       classInfo: classInfo, // null일 수도 있음
       projects: projects?.map(project => ({
         projectId: project.project_id,
