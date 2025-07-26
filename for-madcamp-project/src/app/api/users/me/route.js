@@ -28,10 +28,10 @@ export async function PUT(req) {
 
     // 2. 요청 본문 파싱
     const requestBody = await req.json();
-    const { name, profileImageUri, interestedTopics } = requestBody;
+    const { name, profileImageUri, instagramUri, school, interestedTopics } = requestBody;
 
     // 3. 최소한 하나의 필드가 있는지 확인
-    if (!name && !profileImageUri && !interestedTopics) {
+    if (!name && !profileImageUri && !instagramUri && !school && !interestedTopics) {
       return NextResponse.json(
         { error: 'At least one field to update is required.' },
         { status: 400 }
@@ -42,6 +42,8 @@ export async function PUT(req) {
     let profileUpdateData = {};
     if (name !== undefined) profileUpdateData.name = name;
     if (profileImageUri !== undefined) profileUpdateData.profile_image_uri = profileImageUri;
+    if (instagramUri !== undefined) profileUpdateData.instagram_uri = instagramUri;
+    if (school !== undefined) profileUpdateData.school = school;
 
     let updatedProfile = null;
     if (Object.keys(profileUpdateData).length > 0) {
@@ -107,6 +109,8 @@ export async function PUT(req) {
         id,
         name,
         profile_image_uri,
+        instagram_uri,
+        school,
         class_id,
         CAMP_CLASSES(
           class_num,
@@ -146,6 +150,8 @@ export async function PUT(req) {
       name: finalProfile.name,
       email: user.email,
       profileImageUri: finalProfile.profile_image_uri,
+      instagramUri: finalProfile.instagram_uri,
+      school: finalProfile.school,
       classInfo: finalProfile.CAMP_CLASSES ? {
         seasonName: finalProfile.CAMP_CLASSES.SEASONS.name,
         classNum: finalProfile.CAMP_CLASSES.class_num
