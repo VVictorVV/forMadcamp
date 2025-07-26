@@ -54,7 +54,7 @@
   padding: 1rem;
   border: none;
   border-radius: 8px;
-  background-color: #003E55; /* 프라이머리 색상으로 변경 */
+  background-color: #006D94; /* 프라이머리 색상으로 변경 */
   color: white;
   font-size: 1rem;
   font-weight: bold;
@@ -64,7 +64,27 @@
 }
 
 .button:hover {
-  background-color: #002a3a; /* 호버 시 어두운 색으로 변경 */
+  background-color: #005a7b; /* 호버 시 어두운 색으로 변경 */
+}
+
+.success {
+  color: #2f855a;
+  background-color: #f0fff4;
+  padding: 0.8rem;
+  border-radius: 8px;
+  text-align: center;
+  font-size: 0.9rem;
+  margin-bottom: 1.5rem; /* 폼과의 간격 */
+}
+
+.error {
+  color: #e53e3e;
+  background-color: #fef2f2;
+  padding: 0.8rem;
+  border-radius: 8px;
+  text-align: center;
+  font-size: 0.9rem;
+  margin-top: 1rem;
 }
 
 .toggle {
@@ -77,7 +97,7 @@
 .toggleButton {
   background: none;
   border: none;
-  color: #003E55; /* 프라이머리 색상으로 변경 */
+  color: #006D94; /* 프라이머리 색상으로 변경 */
   font-weight: bold;
   cursor: pointer;
   padding-left: 0.5rem;
@@ -86,7 +106,7 @@
 
 .graphicPanel {
   flex: 1.5;
-  background: linear-gradient(45deg, #001f2b, #003E55); /* 그라데이션 대비 강화 */
+  background: linear-gradient(45deg, #011b4b, #006D94); /* 새 프라이머리 색상 기반 그라데이션 */
   display: flex;
   align-items: center;
   justify-content: center;

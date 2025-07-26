@@ -10,54 +10,49 @@ import { supabase } from "../lib/supabaseClient";
 
 const Header = () => {
   const pathname = usePathname();
-  const { isLoggedIn, logout } = useAuth();
+  const { user, logout } = useAuth(); // isLoggedIn 대신 user 객체 사용
   const [userClass, setUserClass] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchUserClass = async () => {
-      console.log("Attempting to fetch user data from 'USERS' table...");
-      const { data: userData, error: userError } = await supabase
-        .from("USERS") // 테이블 이름을 "USERS"로 수정
-        .select("class_id")
-        .limit(1)
-        .single();
-
-      console.log("User data fetched:", { userData, userError });
-
-      if (userError) {
-        console.error("Error fetching user:", userError.message);
+      // 로그인된 사용자가 없으면 아무 작업도 하지 않음
+      if (!user) {
+        setUserClass(null);
         return;
       }
 
-      if (userData && userData.class_id) {
-        console.log(`Found class_id: ${userData.class_id}. Fetching class data...`);
+      // PROFILES 테이블에서 현재 로그인된 사용자의 class_id를 가져옴
+      const { data: profileData, error: profileError } = await supabase
+        .from("PROFILES")
+        .select("class_id")
+        .eq("id", user.id) // 실제 사용자 ID로 조회
+        .single();
+
+      if (profileError || !profileData) {
+        // console.error("Error fetching profile:", profileError?.message);
+        return;
+      }
+
+      // class_id로 CAMP_CLASSES 테이블에서 분반 정보를 조회
+      if (profileData.class_id) {
         const { data: classData, error: classError } = await supabase
-          .from("CAMP_CLASSES") // 테이블 이름을 "CAMP_CLASSES"로 수정
+          .from("CAMP_CLASSES")
           .select("class_num")
-          .eq("class_id", userData.class_id) // "id"를 "class_id"로 수정
+          .eq("class_id", profileData.class_id)
           .single();
 
-        console.log("Class data fetched:", { classData, classError });
-
-        if (classError) {
-          console.error("Error fetching class number:", classError.message);
-        } else if (classData) {
-          console.log(`Found class_num: ${classData.class_num}. Setting user class.`);
+        if (classData) {
           setUserClass(`${classData.class_num}분반`);
-        } else {
-          console.log("Class data not found for the given class_id.");
         }
-      } else {
-        console.log("User data found, but no class_id was present or user data was null.");
       }
     };
 
-    if (isLoggedIn) {
+    if (user) {
       fetchUserClass();
     } else {
-      setUserClass(null); // 로그아웃 시 분반 정보 초기화
+      setUserClass(null);
     }
-  }, [isLoggedIn]);
+  }, [user]); // user 객체가 변경될 때마다 이 효과를 재실행
 
   const navLinks = [
     { href: "/project", label: "프로젝트" },
@@ -65,21 +60,15 @@ const Header = () => {
     { href: "/schedule", label: "일정" },
     { href: "/vote", label: "투표" },
     { href: "/memories", label: "추억" },
-    { href: "/members", label: "구성원" },
   ];
 
   return (
     <header className={styles.header}>
       <div className={styles.logoContainer}>
-        {
-          <Image
-            src="/logo.svg"
-            alt="logo"
-            width={30}
-            height={25}
-          />
-        }
-        {isLoggedIn && userClass && <span className={styles.userClass}>{userClass}</span>}
+        <Link href="/" className={styles.logoLink}>
+          <Image src="/logo.svg" alt="Madcamp Logo" width={30} height={30} />
+        </Link>
+        {user && userClass && <span className={styles.userClass}>{userClass}</span>}
       </div>
       <nav className={styles.navLinks}>
         {navLinks.map((link) => (
@@ -91,9 +80,12 @@ const Header = () => {
             {link.label}
           </Link>
         ))}
-        {isLoggedIn ? (
-          <Link href="/profile" className={pathname === "/profile" ? styles.active : ""}>
-            프로필
+        {user ? (
+          <Link
+            href="/browse"
+            className={pathname === "/browse" ? styles.active : ""}
+          >
+            둘러보기
           </Link>
         ) : (
           <Link href="/auth" className={styles.loginButton}>
