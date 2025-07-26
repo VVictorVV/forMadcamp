@@ -1,71 +1,86 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '../../../../../lib/supabaseClient'; // 경로 확인 필요
+import { supabase } from '../../../../../src/lib/supabaseClient'; // 올바른 상대 경로로 수정
 
 export async function POST(req) {
-  // App Router에서는 함수의 이름(POST)으로 HTTP 메서드를 구분하므로
-  // 별도의 메서드 체크가 필요 없습니다.
-  
   try {
-    // 1. 요청(Request) 객체에서 JSON 본문을 파싱합니다.
-    const { email, name, password } = await req.json();
+    const { email, name, password, class_num } = await req.json();
 
-    // 2. 필수 필드 유효성 검사 (400 Bad Request)
-    if (!email || !password || !name) {
+    // 1. 필수 필드 유효성 검사 (class_num 포함)
+    if (!email || !password || !name || !class_num) {
       return NextResponse.json(
-        { error: 'Email, name, and password are required.' },
+        { error: 'Email, name, password, and class number are required.' },
         { status: 400 }
       );
     }
 
-    // 3. Supabase auth를 사용하여 신규 유저를 생성합니다.
-    const { data, error } = await supabase.auth.signUp({
+    // 2. season_id=1과 class_num으로 class_id 찾기
+    const { data: classData, error: classError } = await supabase
+      .from('CAMP_CLASSES')
+      .select('class_id')
+      .eq('season_id', 1)
+      .eq('class_num', class_num)
+      .single();
+
+    if (classError || !classData) {
+      console.error('API Error - find class:', classError);
+      return NextResponse.json(
+        { error: 'Invalid class number for the current season.' },
+        { status: 404 } // Not Found
+      );
+    }
+    const class_id = classData.class_id;
+
+    // 3. Supabase auth를 사용하여 신규 유저 생성
+    const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
       email: email,
       password: password,
       options: {
         data: {
-          name: name,
+          name: name, // handle_new_user 트리거가 사용할 데이터
         },
       },
     });
 
-    // 4. Supabase 에러 처리
-    if (error) {
-      if (error.message.includes('already registered')) {
-        // 4-1. 이미 존재하는 이메일 (409 Conflict)
-        return NextResponse.json(
-          { error: 'This email is already taken.' },
-          { status: 409 }
-        );
+    if (signUpError) {
+      if (signUpError.message.includes('already registered')) {
+        return NextResponse.json({ error: 'This email is already registered.' }, { status: 409 });
       }
-      // 4-2. 그 외 서버 내부 에러
-      console.error('Supabase signup error:', error);
+      console.error('API Error - Supabase signup:', signUpError);
       return NextResponse.json(
-        { error: error.message || 'Internal server error.' },
-        { status: error.status || 500 }
+        { error: signUpError.message || 'An internal server error occurred.' },
+        { status: 500 }
       );
     }
     
-    // 5. 성공 시 (201 Created)
-    if (data.user) {
+    // 4. 회원가입 성공 후, PROFILES 테이블에 class_id 업데이트
+    if (signUpData.user) {
+       const { error: updateError } = await supabase
+        .from('PROFILES')
+        .update({ class_id: class_id })
+        .eq('id', signUpData.user.id);
+      
+      if (updateError) {
+        console.error('API Error - FAILED to update profile with class_id:', updateError);
+        // 여기서 트랜잭션 롤백 등을 고려할 수 있지만, 일단은 에러 로깅만 합니다.
+      }
+
       const responseUser = {
-        id: data.user.id,
-        email: data.user.email,
-        name: data.user.user_metadata.name,
-        createdAt: data.user.created_at,
+        id: signUpData.user.id,
+        email: signUpData.user.email,
+        name: signUpData.user.user_metadata.name,
       };
       return NextResponse.json(responseUser, { status: 201 });
     }
     
     return NextResponse.json(
-      { error: 'User creation failed unexpectedly.' },
+      { error: 'User creation failed unexpectedly after signup.' },
       { status: 500 }
     );
 
   } catch (err) {
-    // 6. 예기치 못한 서버 에러 처리
-    console.error('Unexpected server error:', err);
+    console.error('API Error - Unexpected server error:', err);
     return NextResponse.json(
-      { error: 'Internal server error.' },
+      { error: 'An internal server error occurred.' },
       { status: 500 }
     );
   }

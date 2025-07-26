@@ -54,12 +54,27 @@
 }
 
 .navLinks a.active {
-  color: #003E55; /* 활성 탭 색상 변경 */
+  color: #006D94; /* 활성 탭 색상 변경 */
   background-color: #f0f0f0;
 }
 
+a.loginButton {
+  background-color: #006D94; /* 로그인 버튼 배경색 변경 */
+  color: white;
+  padding: 0.5rem 1.2rem;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: bold;
+  transition: background-color 0.2s;
+}
+
+a.loginButton:hover {
+  background-color: #005a7b; /* 호버 시 어두운 색으로 변경 */
+  color: white;
+}
+
 button.loginButton {
-  background-color: #003E55;
+  background-color: #006D94; /* 로그아웃 버튼 배경색 변경 */
   color: white;
   padding: 0.5rem 1.2rem;
   border-radius: 8px;
@@ -70,9 +85,4 @@ button.loginButton {
   font-family: inherit;
   font-size: inherit;
   cursor: pointer;
-}
-
-a.loginButton:hover {
-  background-color: #002a3a; /* 호버 시 어두운 색으로 변경 */
-  color: white;
 } 
