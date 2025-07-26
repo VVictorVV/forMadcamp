@@ -1,0 +1,180 @@
+/* 전체 컨테이너 */
+.container {
+  background-color: #ffffff;
+  padding: 4rem 12% 2rem; /* 상단 패딩 추가, 양옆 패딩 증가 */
+}
+
+/* --- 프로필 헤더 --- */
+.profileHeader {
+  padding-bottom: 2rem; /* 헤더와 메인 콘텐츠 간격 */
+}
+
+.headerContent {
+  display: flex;
+  align-items: center; /* 세로 중앙 정렬 */
+  gap: 1.5rem;
+}
+
+.avatar {
+  width: 128px;
+  height: 128px;
+  border-radius: 50%;
+  background-color: #e0e0e0;
+  border: 4px solid #f9fafb; /* 배경색과 어울리는 테두리 색 */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  object-fit: cover;
+}
+
+.headerActions {
+  margin-left: auto;
+  display: flex;
+  gap: 1rem; /* 버튼 사이 간격 조정 */
+}
+
+.actionButton {
+  background-color: #006D94; /* 프라이머리 색상 */
+  border-radius: 8px; /* 원형에서 사각형으로 변경 */
+  border: none;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.2s;
+  padding: 0.5rem 1rem; /* 텍스트를 위한 패딩 추가 */
+  gap: 0.5rem; /* 아이콘과 텍스트 사이 간격 */
+}
+
+.actionButton:hover {
+  background-color: #005c7a;
+  transform: translateY(-2px);
+}
+
+.actionButton span {
+  color: white;
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.iconInvert {
+  filter: brightness(0) invert(1);
+}
+
+.userInfo {
+  /* padding-bottom: 1.5rem; 불필요하여 제거 */
+}
+
+.name {
+  font-size: 2rem;
+  font-weight: 600;
+  color: #111827;
+  margin: 0;
+}
+
+/* --- 메인 컨텐츠 --- */
+.mainWrapper {
+  border-top: 1px solid #e5e7eb;
+  padding-top: 2rem;
+}
+
+.contentGrid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 3rem;
+}
+
+.section {
+  margin-bottom: 2.5rem;
+}
+
+.sectionTitle {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 1rem;
+}
+
+.aboutText {
+  color: #374151;
+  line-height: 1.6;
+  font-size: 1rem;
+}
+
+/* 사이드바 */
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.sidebarItem {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.sidebarIcon {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #f0f7ff;
+  border-radius: 50%;
+  color: #006D94;
+  font-size: 1.1rem; /* 이모지 아이콘 크기 조정 */
+}
+
+.sidebarLabel {
+  font-size: 1rem;
+  font-weight: 500;
+  color: #374151;
+}
+
+/* Experience 카드 (기존과 동일) */
+.experienceGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+}
+
+.experienceCard {
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.expCardHeader {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.expCardIcon {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 8px;
+  background-color: #f3f4f6;
+}
+
+.expCardTitle {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #111827;
+}
+.expCardCompany {
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.expCardDate {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin-top: auto; /* 날짜를 하단으로 밀어냄 */
+  padding-top: 1rem;
+} 

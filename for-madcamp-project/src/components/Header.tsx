@@ -47,7 +47,11 @@ const Header = () => {
       }
     };
 
-    fetchUserClass();
+    if (user) {
+      fetchUserClass();
+    } else {
+      setUserClass(null);
+    }
   }, [user]); // user 객체가 변경될 때마다 이 효과를 재실행
 
   const navLinks = [
@@ -56,20 +60,13 @@ const Header = () => {
     { href: "/schedule", label: "일정" },
     { href: "/vote", label: "투표" },
     { href: "/memories", label: "추억" },
-    { href: "/members", label: "구성원" },
   ];
 
   return (
     <header className={styles.header}>
       <div className={styles.logoContainer}>
-        <Link href="/">
-            <Image
-              src="/logo.svg"
-              alt="Madcamp Logo"
-              width={30}
-              height={25}
-              priority
-            />
+        <Link href="/" className={styles.logoLink}>
+          <Image src="/logo.svg" alt="Madcamp Logo" width={30} height={30} />
         </Link>
         {user && userClass && <span className={styles.userClass}>{userClass}</span>}
       </div>
@@ -84,8 +81,11 @@ const Header = () => {
           </Link>
         ))}
         {user ? (
-          <Link href="/profile" className={pathname === "/profile" ? styles.active : ""}>
-            프로필
+          <Link
+            href="/browse"
+            className={pathname === "/browse" ? styles.active : ""}
+          >
+            둘러보기
           </Link>
         ) : (
           <Link href="/auth" className={styles.loginButton}>
