@@ -94,9 +94,25 @@ export async function GET(req, { params }) {
       );
     }
 
-    // 7. 각 프로젝트별로 스크럼 조회 (날짜 필터링 조건부 적용)
+    // 7. 각 프로젝트별로 스크럼과 참여자 정보 조회
     const scrumsWithDetails = await Promise.all(
       (projects || []).map(async (project) => {
+        // 프로젝트의 참여자들 조회
+        const { data: participators, error: participatorsError } = await supabase
+          .from('PARTICIPATOR')
+          .select(`
+            profile_id,
+            role,
+            PROFILES!inner(id, name)
+          `)
+          .eq('project_id', project.project_id);
+
+        if (participatorsError) {
+          console.error('Participators query error:', participatorsError);
+          return [];
+        }
+
+        // 스크럼 조회 (날짜 필터링 조건부 적용)
         let query = supabase
           .from('SCRUMS')
           .select(`
@@ -130,6 +146,11 @@ export async function GET(req, { params }) {
             projectId: project.project_id,
             projectName: project.project_name
           },
+          participators: (participators || []).map(p => ({
+            userId: p.profile_id,
+            name: p.PROFILES.name,
+            role: p.role
+          })),
           date: scrum.date,
           done: scrum.done,
           plan: scrum.plan,

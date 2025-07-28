@@ -1,0 +1,393 @@
+.container {
+    min-height: calc(100vh - 60px);
+    padding: 2rem 10%;
+    background-color: #f4f4f9;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.pageTitle {
+    font-size: 3rem;
+    font-weight: bold;
+    color: #333;
+}
+
+.dateSelector {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.monthLabel {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #333;
+}
+
+.dateList {
+    display: flex;
+    gap: 0.5rem;
+    overflow-x: auto;
+    overflow-y: hidden;
+    position: relative;
+    transition: all 0.3s ease;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+    padding: 0 20px;
+}
+
+.dateList::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
+}
+
+.dateButton {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: none;
+    background-color: #e0e0e0;
+    color: #666;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    flex-shrink: 0;
+    transform-origin: center;
+}
+
+.dateButton:hover {
+    background-color: #d0d0d0;
+}
+
+.dateButton.today {
+    background-color: #666;
+    color: white;
+}
+
+.dateButton.selected {
+    background-color: #006D94;
+    color: white;
+}
+
+.dateButton.otherMonth {
+    background-color: #f0f0f0;
+    color: #999;
+}
+
+.selectedIndicator {
+    position: absolute;
+    bottom: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-top: 6px solid #333;
+}
+
+.createButton {
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #fff;
+    background-color: #006D94;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.createButton:hover {
+    background-color: #005a7a;
+}
+
+.gridContainer {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    min-height: 400px;
+}
+
+.scrumCard {
+    background-color: #f8f8f8;
+    border-radius: 15px;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    border: 1px solid #e0e0e0;
+    transition: all 0.3s ease;
+    cursor: default;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    min-height: 200px;
+    position: relative;
+    overflow: hidden;
+}
+
+.scrumCard.editable {
+    cursor: pointer;
+}
+
+.scrumCard.editable:hover {
+    background-color: #f0f0f0;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+.scrumCard.editable:hover .scrumContent {
+    opacity: 0.3;
+}
+
+.scrumCard:hover {
+    background-color: #f0f0f0;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+.scrumContent {
+    width: 100%;
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.projectName {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 0.5rem;
+    text-align: center;
+}
+
+.editButton {
+    padding: 0.3rem 0.8rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #fff;
+    background-color: #006D94;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.editButton:hover {
+    background-color: #005a7a;
+}
+
+.editOverlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+}
+
+.scrumCard.editable:hover .editOverlay {
+    opacity: 1;
+}
+
+.editText {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #006D94;
+    background-color: rgba(255, 255, 255, 0.9);
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.participators {
+    font-size: 0.9rem;
+    color: #666;
+    margin-bottom: 1rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: center;
+}
+
+.participator {
+    background-color: #f0f0f0;
+    padding: 0.2rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    color: #555;
+}
+
+.scrumDetails {
+    text-align: left;
+    font-size: 0.9rem;
+    color: #555;
+}
+
+.scrumDetails p {
+    margin-bottom: 0.5rem;
+    line-height: 1.4;
+}
+
+.scrumDetails strong {
+    color: #333;
+}
+
+.emptyCard {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #999;
+    font-size: 1.2rem;
+    font-weight: 500;
+}
+
+.emptyCard p {
+    margin: 0;
+}
+
+.noScrumsMessage {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 400px;
+    background-color: #f8f8f8;
+    border-radius: 15px;
+    border: 2px dashed #ddd;
+}
+
+.noScrumsContent {
+    text-align: center;
+    color: #999;
+}
+
+.noScrumsText {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: #666;
+}
+
+.noScrumsSubtext {
+    font-size: 1rem;
+    color: #999;
+    margin: 0;
+}
+
+/* Modal Styles */
+.modal {
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.modalContent {
+    background-color: #fefefe;
+    margin: auto;
+    padding: 2rem;
+    border: 1px solid #888;
+    width: 80%;
+    max-width: 500px;
+    border-radius: 10px;
+    position: relative;
+}
+
+.closeButton {
+    color: #aaa;
+    position: absolute;
+    top: 1rem;
+    right: 1.5rem;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.closeButton:hover,
+.closeButton:focus {
+    color: black;
+    text-decoration: none;
+}
+
+.modalContent h2 {
+    margin-bottom: 1.5rem;
+    font-weight: bold;
+}
+
+.modalContent form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.formSection {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.formSection label {
+    font-weight: 600;
+    font-size: 1rem;
+    color: #555;
+}
+
+.modalContent input[type="text"],
+.modalContent textarea,
+.modalContent select {
+    padding: 0.75rem;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    font-size: 1rem;
+    resize: vertical;
+}
+
+.modalContent textarea {
+    min-height: 80px;
+}
+
+.saveButton {
+    padding: 0.75rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #fff;
+    background-color: #006D94;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 1rem;
+}
+
+.saveButton:hover {
+    background-color: #005a7a;
+}
+
+.saveButton:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+} 
