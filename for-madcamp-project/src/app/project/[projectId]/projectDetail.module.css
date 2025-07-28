@@ -1,0 +1,318 @@
+.pageContainer {
+    margin: 2rem auto;
+    padding: 0 2rem;
+    max-width: 960px;
+}
+
+.bannerArea {
+    position: relative;
+    padding-top: 2.5rem; /* Make space for the tab */
+    margin-bottom: 2rem;
+}
+
+.titleHeader {
+    position: absolute;
+    top: 0;
+    left: 2rem;
+    z-index: 2;
+    background-color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: 12px 12px 0 0;
+    /* 수정: 그림자 효과를 이미지와 같이 더 은은하게 변경 */
+    box-shadow: 0 2px 8px -2px rgba(0,0,0,0.15);
+}
+
+/* This pseudo-element creates the illusion of a scooped inner corner */
+.titleHeader::after {
+    content: '';
+    position: absolute;
+    bottom: -1px; /* To align with the banner's border */
+    right: -20px;
+    width: 20px;
+    height: 20px;
+    background-color: transparent;
+    border-top-left-radius: 10px;
+    box-shadow: -10px -10px 0 10px white; /* Must be the same color as the tab background */
+}
+
+.titleInput {
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: #333;
+    border: none;
+    background: transparent;
+    padding: 0;
+    outline: none;
+    width: 100%;
+}
+.titleInput:not([readOnly]) {
+    border-bottom: 2px solid #006D94;
+}
+
+.banner {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    padding-top: 56.25%; /* 16:9 Aspect Ratio */
+    /* 수정: 배경색을 이미지와 유사한 밝은 회색으로 명확히 함 */
+    background-color: #f8f9fa;
+    border-radius: 12px;
+    /* 수정: 그림자 효과를 이미지와 같이 더 은은하게 변경 */
+    box-shadow: 0 4px 12px -4px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
+
+.bannerImage,
+.defaultBanner {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 12px;
+}
+
+/* --- "Project 1" 이미지의 '+' 버튼과 일치시키기 위한 주요 수정 영역 --- */
+.uploadButton {
+    position: absolute;
+    top: 12px;  /* 위치 미세 조정 */
+    right: 12px; /* 위치 미세 조정 */
+    width: 24px;   /* 크기 조정 */
+    height: 24px;  /* 크기 조정 */
+    background-color: #6c757d; /* 이미지와 동일한 단색 회색으로 변경 */
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;  /* 아이콘(+) 크기에 맞게 폰트 크기 조정 */
+    font-weight: 500; /* 폰트 굵기 조정 */
+    cursor: pointer;
+    border: none;     /* 흰색 테두리 제거 */
+    transition: background-color 0.2s;
+    z-index: 3;
+}
+
+.uploadButton:hover {
+    background-color: #5a6268; /* 호버 시 배경색 변경 */
+}
+/* --- 수정 완료 --- */
+
+.content {
+    padding: 0 1rem;
+}
+
+.mainControls {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 1rem;
+}
+
+.sectionTitle {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #555;
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
+    border-bottom: 2px solid #eee;
+    padding-bottom: 0.5rem;
+}
+
+.textarea {
+    width: 100%;
+    min-height: 120px;
+    padding: 0.75rem;
+    border: 1px solid transparent;
+    border-radius: 5px;
+    font-size: 1rem;
+    line-height: 1.6;
+    resize: vertical;
+    transition: background-color 0.2s, border-color 0.2s;
+}
+.textarea:not([readOnly]) {
+    border-color: #ccc;
+    background-color: #f8f9fa;
+}
+
+.markdownEditorContainer {
+    display: flex;
+    gap: 1rem;
+}
+
+.markdownEditor {
+    width: 50%;
+    min-height: 300px;
+}
+
+.markdownPreview {
+    width: 50%;
+    min-height: 300px;
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 0.75rem;
+    line-height: 1.7;
+}
+
+.editButton {
+    padding: 0.5rem 1.5rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #006D94;
+    background-color: transparent;
+    border: 1px solid #006D94;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.2s, color 0.2s;
+}
+.editButton:hover {
+    background-color: #f0f8ff;
+}
+
+.buttonGroup {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.actionButton {
+    padding: 0.75rem 2rem;
+    font-size: 1rem;
+    font-weight: 600;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.2s, opacity 0.2s;
+}
+
+.saveButton {
+    background-color: #006D94;
+    color: white;
+}
+.saveButton:hover:not(:disabled) {
+    background-color: #005a7a;
+}
+.saveButton:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+.cancelButton {
+    background-color: #6c757d;
+    color: white;
+}
+.cancelButton:hover {
+    background-color: #5a6268;
+}
+
+.markdownDisplay {
+    padding: 0.5rem;
+    line-height: 1.7;
+}
+
+.markdownDisplay h1, .markdownPreview h1 {
+    font-size: 2em;
+    margin-top: 1.5rem;
+    margin-bottom: 1rem;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 0.3em;
+    font-weight: 600;
+}
+.markdownDisplay h2, .markdownPreview h2 {
+    font-size: 1.5em;
+    margin-top: 1.5rem;
+    margin-bottom: 1rem;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 0.3em;
+    font-weight: 600;
+}
+.markdownDisplay h3, .markdownPreview h3 {
+    font-size: 1.25em;
+    margin-top: 1.2rem;
+    margin-bottom: 0.8rem;
+    font-weight: 600;
+}
+.markdownDisplay p, .markdownPreview p {
+    margin-bottom: 1rem;
+}
+.markdownDisplay ul, .markdownPreview ul,
+.markdownDisplay ol, .markdownPreview ol {
+    padding-left: 2rem;
+    margin-bottom: 1rem;
+    list-style-position: outside;
+}
+.markdownDisplay ol, .markdownPreview ol {
+    list-style-type: decimal;
+}
+.markdownDisplay ul, .markdownPreview ul {
+    list-style-type: disc;
+}
+.markdownDisplay li, .markdownPreview li {
+    margin-bottom: 0.5rem;
+}
+.markdownDisplay ul ul, .markdownPreview ul ul,
+.markdownDisplay ol ul, .markdownPreview ol ul,
+.markdownDisplay ul ol, .markdownPreview ul ol,
+.markdownDisplay ol ol, .markdownPreview ol ol {
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+.markdownDisplay a, .markdownPreview a {
+    color: #006D94;
+    text-decoration: underline;
+}
+.markdownDisplay a:hover, .markdownPreview a:hover {
+    color: #005a7a;
+}
+.markdownDisplay strong, .markdownPreview strong {
+    font-weight: 600;
+}
+.markdownDisplay del, .markdownPreview del {
+    text-decoration: line-through;
+}
+.markdownDisplay hr, .markdownPreview hr {
+    border: none;
+    border-top: 1px solid #eee;
+    margin: 1.5rem 0;
+}
+.markdownDisplay table, .markdownPreview table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 1rem;
+    display: block;
+    overflow-x: auto;
+}
+.markdownDisplay th, .markdownPreview th,
+.markdownDisplay td, .markdownPreview td {
+    border: 1px solid #ddd;
+    padding: 0.75rem;
+}
+.markdownDisplay th, .markdownPreview th {
+    font-weight: 600;
+    background-color: #f9f9f9;
+}
+.markdownDisplay img, .markdownPreview img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+}
+.markdownDisplay code, .markdownPreview code {
+    background-color: #e9ecef;
+    padding: 0.2em 0.4em;
+    border-radius: 3px;
+    font-family: monospace;
+}
+.markdownDisplay pre, .markdownPreview pre {
+    background-color: #e9ecef;
+    padding: 1rem;
+    border-radius: 5px;
+    overflow-x: auto;
+}
+.markdownDisplay blockquote, .markdownPreview blockquote {
+    border-left: 4px solid #ccc;
+    padding-left: 1rem;
+    color: #666;
+    margin: 1rem 0;
+} 
