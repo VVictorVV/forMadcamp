@@ -1,61 +1,315 @@
 .container {
-  min-height: calc(100vh - 60px);
-  padding: 2rem 10%; /* 상단 여백 축소 */
-  background-color: #f4f4f9;
+    min-height: calc(100vh - 60px);
+    padding: 2rem 10%;
+    background-color: #f4f4f9;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
 }
 
 .pageTitle {
-  font-size: 3rem;
-  font-weight: bold;
-  color: #333;
-  margin-bottom: 2rem;
+    font-size: 3rem;
+    font-weight: bold;
+    color: #333;
+}
+
+.createButton {
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #fff;
+    background-color: #006D94; /* Primary color */
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.createButton:hover {
+    background-color: #005a7a; /* Darker primary color */
 }
 
 .cardContainer {
-  display: flex;
-  width: 100%;
-  height: 600px; /* 세로 길이 증가 */
-  gap: 1rem;
+    display: flex; /* grid에서 flex로 변경 */
+    width: 100%;
+    height: 600px;
+    gap: 1rem;
 }
 
 .card {
-  flex: 1;
-  position: relative;
-  background-color: #ffffff; /* 배경 흰색으로 변경 */
-  background-size: cover;
-  background-position: center;
-  border-radius: 15px; /* 둥근 모서리 제거 */
-  color: #333; /* 텍스트 색상 변경 */
-  cursor: pointer;
-  overflow: hidden;
-  transition: flex 0.3s ease-in-out;
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1); /* 그림자 연하게 조정 */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid #e0e0e0; /* 연한 테두리 추가 */
+    flex: 1; /* 기본 flex 값 */
+    position: relative;
+    background-color: #ffffff;
+    background-size: cover;
+    background-position: center;
+    border-radius: 15px;
+    color: #333;
+    cursor: pointer;
+    overflow: hidden;
+    transition: flex 0.4s ease-in-out; /* 애니메이션 속도 조절 */
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #e0e0e0;
 }
 
 .card:hover {
-  flex: 4;
+    flex: 4; /* hover 시 확장 */
+}
+
+.projectCard {
+    color: white;
+}
+
+.emptyCard {
+    cursor: default;
+}
+
+.cardOverlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+}
+
+.card:hover .cardOverlay {
+    opacity: 1;
 }
 
 .title {
-  font-size: 2rem;
-  font-weight: bold;
-  /* text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.6); */ /* 텍스트 그림자 제거 */
-  opacity: 1;
-  transition: opacity 0.3s ease-in-out;
+    font-size: 2rem;
+    font-weight: bold;
+    opacity: 1;
+    transition: opacity 0.3s ease-in-out;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.6);
 }
 
-.card:not(:hover) .title {
-  opacity: 0.5;
+.emptyCard .title {
+    color: #333;
+    text-shadow: none;
 }
 
-/* 임시 배경색 제거 */
-/*
-.card:nth-child(1) { background-color: #8e44ad; }
-.card:nth-child(2) { background-color: #2980b9; }
-.card:nth-child(3) { background-color: #27ae60; }
-.card:nth-child(4) { background-color: #f39c12; }
-*/ 
+.noImageTitle {
+    color: #006D94; /* Primary color */
+    text-shadow: none;
+}
+
+.card:not(:hover) .projectCard .title {
+    opacity: 0;
+}
+
+
+/* Modal Styles (기존 스타일 유지) */
+.modal {
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.modalContent {
+    background-color: #fefefe;
+    margin: auto;
+    padding: 2rem;
+    border: 1px solid #888;
+    width: 80%;
+    max-width: 500px;
+    border-radius: 10px;
+    position: relative;
+}
+
+.closeButton {
+    color: #aaa;
+    position: absolute;
+    top: 1rem;
+    right: 1.5rem;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.closeButton:hover,
+.closeButton:focus {
+    color: black;
+    text-decoration: none;
+}
+
+.modalContent h2 {
+    margin-bottom: 1.5rem;
+    font-weight: bold; /* bold 스타일 추가 */
+}
+
+.modalContent form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem; /* 간격 조정 */
+}
+
+.formSection {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.formSection label {
+    font-weight: 600;
+    font-size: 1rem;
+    color: #555;
+}
+
+.participatorList {
+    max-height: 200px;
+    overflow-y: auto;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 0.5rem;
+}
+
+.participatorItem {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem;
+    border-bottom: 1px solid #eee;
+}
+
+.participatorItem:last-child {
+    border-bottom: none;
+}
+
+/* The switch - the box around the slider */
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 50px; /* 너비 감소 */
+    height: 28px; /* 높이 감소 */
+}
+
+/* Hide default HTML checkbox */
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+/* The slider */
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    -webkit-transition: .4s;
+    transition: .4s;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 20px; /* 크기 감소 */
+    width: 20px;  /* 크기 감소 */
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    -webkit-transition: .4s;
+    transition: .4s;
+}
+
+input:checked + .slider {
+    background-color: #006D94; /* Primary Color */
+}
+
+input:focus + .slider {
+    box-shadow: 0 0 1px #006D94;
+}
+
+input:checked + .slider:before {
+    -webkit-transform: translateX(22px); /* 이동 거리 감소 */
+    -ms-transform: translateX(22px);
+    transform: translateX(22px);
+}
+
+/* Rounded sliders */
+.slider.round {
+    border-radius: 34px;
+}
+
+.slider.round:before {
+    border-radius: 50%;
+}
+
+.modalContent input[type="text"],
+.modalContent textarea,
+.modalContent select {
+    padding: 0.75rem;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    font-size: 1rem;
+}
+
+.fileInputContainer {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.fileUploadLabel {
+    padding: 0.75rem 1rem;
+    background-color: #f0f0f0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.fileInputContainer input[type="file"] {
+    display: none;
+}
+
+.imagePreview {
+    margin-top: 1rem;
+    text-align: center;
+}
+
+.imagePreview img {
+    max-width: 100%;
+    max-height: 200px;
+    border-radius: 5px;
+}
+
+.saveButton {
+    padding: 0.75rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #fff;
+    background-color: #006D94; /* Primary color */
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 1rem;
+}
+
+.saveButton:hover {
+    background-color: #005a7a; /* Darker primary color */
+} 
