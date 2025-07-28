@@ -83,8 +83,9 @@ const AuthPage = () => {
         }
         setSuccessMessage('회원가입이 완료되었습니다! 입력하신 이메일을 확인하여 계정 인증을 완료해주세요.');
         setIsLoginView(true);
-      } catch (err: any) {
-        setError(err.message);
+      } catch (err: unknown) {
+        const errorMessage = err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다.';
+        setError(errorMessage);
       }
     }
   };
