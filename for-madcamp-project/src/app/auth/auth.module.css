@@ -79,12 +79,9 @@
 
 .error {
   color: #e53e3e;
-  background-color: #fef2f2;
-  padding: 0.8rem;
-  border-radius: 8px;
+  font-size: 0.875rem;
+  margin-bottom: 1rem; /* 에러 메시지와 버튼 사이의 간격 */
   text-align: center;
-  font-size: 0.9rem;
-  margin-top: 1rem;
 }
 
 .toggle {

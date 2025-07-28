@@ -3,12 +3,12 @@ import { supabase } from '../../../../../src/lib/supabaseClient'; // 올바른 �
 
 export async function POST(req) {
   try {
-    const { email, name, password, class_num } = await req.json();
+    const { email, name, password, class_num, school, instagram_uri } = await req.json();
 
-    // 1. 필수 필드 유효성 검사 (class_num 포함)
-    if (!email || !password || !name || !class_num) {
+    // 1. 필수 필드 유효성 검사 (school 포함)
+    if (!email || !password || !name || !class_num || !school) {
       return NextResponse.json(
-        { error: 'Email, name, password, and class number are required.' },
+        { error: 'Email, name, password, class number, and school are required.' },
         { status: 400 }
       );
     }
@@ -25,7 +25,7 @@ export async function POST(req) {
       console.error('API Error - find class:', classError);
       return NextResponse.json(
         { error: 'Invalid class number for the current season.' },
-        { status: 404 } // Not Found
+        { status: 404 }
       );
     }
     const class_id = classData.class_id;
@@ -52,16 +52,20 @@ export async function POST(req) {
       );
     }
     
-    // 4. 회원가입 성공 후, PROFILES 테이블에 class_id 업데이트
+    // 4. 회원가입 성공 후, PROFILES 테이블에 class_id, school, instagram_url 업데이트
     if (signUpData.user) {
        const { error: updateError } = await supabase
         .from('PROFILES')
-        .update({ class_id: class_id })
+        .update({ 
+          class_id: class_id,
+          school: school,
+          instagram_uri: instagram_uri // instagram_url -> instagram_uri
+        })
         .eq('id', signUpData.user.id);
       
       if (updateError) {
-        console.error('API Error - FAILED to update profile with class_id:', updateError);
-        // 여기서 트랜잭션 롤백 등을 고려할 수 있지만, 일단은 에러 로깅만 합니다.
+        console.error('API Error - FAILED to update profile:', updateError);
+        // 트랜잭션 롤백을 고려할 수 있지만, 일단 에러 로깅만 합니다.
       }
 
       const responseUser = {

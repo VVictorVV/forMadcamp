@@ -42,6 +42,7 @@
   transition: background-color 0.2s, transform 0.2s;
   padding: 0.5rem 1rem; /* 텍스트를 위한 패딩 추가 */
   gap: 0.5rem; /* 아이콘과 텍스트 사이 간격 */
+  /* color: white; -> 제거 (SVG에서 직접 색상 제어) */
 }
 
 .actionButton:hover {
@@ -50,24 +51,138 @@
 }
 
 .actionButton span {
-  color: white;
+  color: white; /* 텍스트 색상은 여기서 제어 */
   font-weight: 500;
   font-size: 0.9rem;
 }
 
-.iconInvert {
-  filter: brightness(0) invert(1);
+.cancelButton {
+  background-color: #6b7280;
+}
+.cancelButton:hover {
+  background-color: #4b5563;
 }
 
-.userInfo {
-  /* padding-bottom: 1.5rem; 불필요하여 제거 */
+.errorMessage {
+  color: #e53e3e;
+  text-align: right;
+  margin-top: 1rem;
+  font-size: 0.9rem;
+}
+
+/* --- 수정 모드 필드 스타일 --- */
+.inputField, .textareaField, .inputFieldSidebar {
+  width: 100%;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem;
+  font-size: 1rem;
+  background-color: #f9fafb;
+  transition: border-color 0.2s;
+}
+.inputField:focus, .textareaField:focus, .inputFieldSidebar:focus {
+  outline: none;
+  border-color: #006D94;
 }
 
 .name {
-  font-size: 2rem;
+  font-size: 2.5rem; /* 이름 폰트 크기 증가 */
   font-weight: 600;
   color: #111827;
   margin: 0;
+}
+
+.name.inputField {
+  font-size: 2.5rem; /* 수정 모드에서도 동일한 폰트 크기 적용 */
+  font-weight: 600;
+  color: #111827;
+}
+
+.textareaField {
+  resize: vertical;
+  min-height: 80px;
+  font-family: inherit;
+}
+
+.inputFieldSidebar {
+  font-size: 1rem;
+  font-weight: 500;
+  color: #374151;
+}
+
+.userInfo {
+  /* flex-grow: 1; -> 제거됨 */
+}
+
+/* --- Interest 섹션 스타일 --- */
+
+/* 보기 모드 */
+.interestViewContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.interestViewItem {
+  border-left: 3px solid #006D94;
+  padding-left: 1rem;
+}
+
+.interestTitle {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0 0 0.25rem 0;
+}
+
+.interestDescription {
+  margin: 0;
+  color: #4b5563;
+}
+
+/* 수정 모드 */
+.interestEditContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.interestEditItem {
+  background-color: #f9fafb;
+  border-radius: 8px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  border: 1px solid #e5e7eb;
+}
+
+.addButton, .deleteButton {
+  border: none;
+  border-radius: 6px;
+  padding: 0.5rem 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.addButton {
+  background-color: #e7f5ff;
+  color: #006D94;
+  align-self: flex-start; /* 버튼이 왼쪽 정렬되도록 */
+}
+.addButton:hover {
+  background-color: #cde9ff;
+}
+
+.deleteButton {
+  background-color: #fef2f2;
+  color: #e53e3e;
+  align-self: flex-end; /* 버튼이 오른쪽 정렬되도록 */
+  font-size: 0.8rem;
+  padding: 0.4rem 0.8rem;
+}
+.deleteButton:hover {
+  background-color: #fee2e2;
 }
 
 /* --- 메인 컨텐츠 --- */
@@ -120,14 +235,13 @@
   align-items: center;
   background-color: #f0f7ff;
   border-radius: 50%;
-  color: #006D94;
-  font-size: 1.1rem; /* 이모지 아이콘 크기 조정 */
+  color: #006D94; /* 기본 아이콘 색상 (활성 상태) */
+  font-size: 1.1rem;
 }
 
-.sidebarLabel {
-  font-size: 1rem;
-  font-weight: 500;
-  color: #374151;
+.iconInactive {
+  color: #adb5bd; /* 비활성 상태 아이콘 색상 (회색) */
+  background-color: #f1f3f5; /* 비활성 시 배경색도 변경 */
 }
 
 /* Experience 카드 (기존과 동일) */

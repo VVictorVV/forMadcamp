@@ -12,8 +12,10 @@ const AuthPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
-  const [classNum, setClassNum] = useState(''); // 분반 선택 상태
-  const [availableClasses, setAvailableClasses] = useState<{ class_num: number }[]>([]); // 분반 목록 상태
+  const [school, setSchool] = useState(''); // 학교 상태 추가
+  const [instagramUri, setInstagramUri] = useState(''); // 인스타그램 URL 상태 추가
+  const [classNum, setClassNum] = useState('');
+  const [availableClasses, setAvailableClasses] = useState<{ class_num: number }[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const router = useRouter();
@@ -25,7 +27,6 @@ const AuthPage = () => {
     }
   }, [user, router]);
 
-  // 컴포넌트 마운트 시 분반 목록을 가져옵니다.
   useEffect(() => {
     const fetchClasses = async () => {
       const { data, error } = await supabase
@@ -39,11 +40,11 @@ const AuthPage = () => {
       } else if (data) {
         setAvailableClasses(data);
         if (data.length > 0) {
-          setClassNum(data[0].class_num.toString()); // 기본값 설정
+          setClassNum(data[0].class_num.toString());
         }
       }
     };
-    if (!isLoginView) { // 회원가입 뷰일 때만 호출
+    if (!isLoginView) {
       fetchClasses();
     }
   }, [isLoginView]);
@@ -54,17 +55,27 @@ const AuthPage = () => {
     setSuccessMessage(null);
 
     if (isLoginView) {
-      // 로그인 로직 (기존과 동일)
+      // 로그인 로직
       const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) setError(error.message);
-      else router.push('/');
+      if (error) {
+        setError("존재하지 않는 계정이거나 비밀번호가 틀렸습니다");
+      } else {
+        router.push('/');
+      }
     } else {
-      // 회원가입 로직 (API 호출 방식으로 변경)
+      // 회원가입 로직
       try {
         const response = await fetch('/api/users/signup', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password, name, class_num: parseInt(classNum) }),
+          body: JSON.stringify({ 
+            email, 
+            password, 
+            name, 
+            class_num: parseInt(classNum),
+            school,
+            instagram_uri: instagramUri
+          }),
         });
         const data = await response.json();
         if (!response.ok) {
@@ -94,6 +105,8 @@ const AuthPage = () => {
             {!isLoginView && (
               <>
                 <input type="text" placeholder="이름" className={styles.input} required value={name} onChange={(e) => setName(e.target.value)} />
+                <input type="text" placeholder="학교" className={styles.input} required value={school} onChange={(e) => setSchool(e.target.value)} />
+                <input type="url" placeholder="인스타그램 URL (선택)" className={styles.input} value={instagramUri} onChange={(e) => setInstagramUri(e.target.value)} />
                 <select className={styles.input} value={classNum} onChange={(e) => setClassNum(e.target.value)} required>
                   {availableClasses.length === 0 ? (
                     <option disabled>분반을 불러오는 중...</option>
@@ -106,10 +119,13 @@ const AuthPage = () => {
               </>
             )}
             <input type="password" placeholder="비밀번호" className={styles.input} required value={password} onChange={(e) => setPassword(e.target.value)} />
+            
+            {/* 에러 메시지를 버튼 위로 이동 */}
+            {error && <p className={styles.error}>{error}</p>}
+
             <button type="submit" className={styles.button}>
               {isLoginView ? "로그인" : "회원가입"}
             </button>
-            {error && <p className={styles.error}>{error}</p>}
           </form>
           <div className={styles.toggle}>
             {isLoginView ? "계정이 없으신가요?" : "이미 계정이 있으신가요?"}
