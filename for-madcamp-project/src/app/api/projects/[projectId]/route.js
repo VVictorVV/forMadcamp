@@ -34,7 +34,7 @@ export async function PUT(req, { params }) {
 
     // 3. 요청 본문 파싱
     const requestBody = await req.json();
-    const { projectName, planning, progress } = requestBody;
+    const { projectName, planning, progress, description, representativeImageUri } = requestBody;
 
     // 4. 프로젝트 존재 여부 확인
     const { data: project, error: projectError } = await supabase
@@ -73,6 +73,8 @@ export async function PUT(req, { params }) {
     const updateData = {};
     if (projectName !== undefined) updateData.project_name = projectName;
     if (planning !== undefined) updateData.planning = planning;
+    if (description !== undefined) updateData.description = description; // description 추가
+    if (representativeImageUri !== undefined) updateData.representative_image_uri = representativeImageUri; // 이미지 URI 업데이트 추가
     if (progress !== undefined) {
       if (progress < 0 || progress > 100) {
         return NextResponse.json(
@@ -124,6 +126,7 @@ export async function PUT(req, { params }) {
       weekNum: updatedProject.week_num,
       createdAt: updatedProject.created_at,
       planning: updatedProject.planning,
+      description: updatedProject.description, // description 추가
       progress: updatedProject.progress,
       representativeImageUri: updatedProject.representative_image_uri,
       participators

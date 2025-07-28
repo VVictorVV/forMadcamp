@@ -24,9 +24,9 @@ export async function POST(req) {
     }
 
     // 3. 파일 유효성 검사 (MIME 타입, 크기 등)
-    const allowedMimeTypes = ['image/jpeg', 'image/png', 'image/gif'];
+    const allowedMimeTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']; // webp 형식 추가
     if (!allowedMimeTypes.includes(file.type)) {
-      return NextResponse.json({ error: 'Invalid file type. Only JPEG, PNG, GIF are allowed.' }, { status: 400 });
+      return NextResponse.json({ error: 'Invalid file type. Only JPEG, PNG, GIF, WEBP are allowed.' }, { status: 400 });
     }
     
     const maxFileSize = 5 * 1024 * 1024; // 5MB
@@ -35,7 +35,8 @@ export async function POST(req) {
     }
 
     // 4. Supabase Storage에 파일 업로드
-    const fileName = `${user.id}/${uuidv4()}-${file.name}`;
+    // 파일 이름에 포함될 수 있는 한글 등 비ASCII 문자를 안전하게 인코딩합니다.
+    const fileName = `${user.id}/${uuidv4()}-${encodeURIComponent(file.name)}`;
     const { data: uploadData, error: uploadError } = await supabase.storage
       .from('project-images') // 'project-images' 버킷 사용
       .upload(fileName, file);
