@@ -7,6 +7,7 @@ import styles from "./Header.module.css";
 import { useAuth } from "../context/AuthContext";
 import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabaseClient";
+import ProgressBar from "./ProgressBar";
 
 const Header = () => {
   const pathname = usePathname();
@@ -70,6 +71,10 @@ const Header = () => {
         </Link>
         {user && userClass && <span className={styles.userClass}>{userClass}</span>}
       </div>
+      
+      {/* 진행도 바 - 중앙에 위치 */}
+      <ProgressBar />
+      
       <nav className={styles.navLinks}>
         {navLinks.map((link) => (
           <Link

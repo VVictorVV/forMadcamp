@@ -30,6 +30,8 @@ const ScrumPage = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [userClassId, setUserClassId] = useState<number | null>(null);
   const [showModal, setShowModal] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [editingScrumId, setEditingScrumId] = useState<number | null>(null);
   const [userProjects, setUserProjects] = useState<{projectId: number, projectName: string}[]>([]);
   const [selectedProject, setSelectedProject] = useState<number | null>(null);
   const [scrumForm, setScrumForm] = useState({
@@ -38,6 +40,7 @@ const ScrumPage = () => {
     others: ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const dateListRef = useRef<HTMLDivElement>(null);
 
   // 날짜 관련 함수들
@@ -97,6 +100,7 @@ const ScrumPage = () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
         setUser(session.user);
+        setCurrentUserId(session.user.id);
         await fetchUserClass(session.user.id);
       }
       setLoading(false);
@@ -204,8 +208,31 @@ const ScrumPage = () => {
   };
 
   const handleCreateScrum = () => {
+    setIsEditMode(false);
+    setEditingScrumId(null);
+    setScrumForm({ done: '', plan: '', others: '' });
+    setSelectedProject(null);
     setShowModal(true);
     fetchUserProjects();
+  };
+
+  const isUserParticipant = (scrum: Scrum) => {
+    if (!currentUserId || !scrum.participators) return false;
+    return scrum.participators.some(p => p.userId === currentUserId);
+  };
+
+  const handleEditScrum = (scrum: Scrum) => {
+    if (!isUserParticipant(scrum)) return;
+    
+    setIsEditMode(true);
+    setEditingScrumId(scrum.scrumId);
+    setScrumForm({
+      done: scrum.done || '',
+      plan: scrum.plan || '',
+      others: scrum.others || ''
+    });
+    setSelectedProject(scrum.project?.projectId || null);
+    setShowModal(true);
   };
 
   const handleSubmitScrum = async (e: React.FormEvent) => {
@@ -223,23 +250,39 @@ const ScrumPage = () => {
         return;
       }
 
-      const response = await fetch(`/api/projects/${selectedProject}/scrums`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`
-        },
-        body: JSON.stringify(scrumForm),
-      });
+      let response;
+      if (isEditMode && editingScrumId) {
+        // 수정 모드
+        response = await fetch(`/api/scrums/${editingScrumId}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`
+          },
+          body: JSON.stringify(scrumForm),
+        });
+      } else {
+        // 생성 모드
+        response = await fetch(`/api/projects/${selectedProject}/scrums`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`
+          },
+          body: JSON.stringify(scrumForm),
+        });
+      }
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Scrum creation failed');
+        throw new Error(errorData.error || (isEditMode ? 'Scrum update failed' : 'Scrum creation failed'));
       }
 
       setShowModal(false);
       setScrumForm({ done: '', plan: '', others: '' });
       setSelectedProject(null);
+      setIsEditMode(false);
+      setEditingScrumId(null);
       
       // 스크럼 목록 새로고침
       if (userClassId) {
@@ -247,8 +290,8 @@ const ScrumPage = () => {
       }
       
     } catch (error) {
-      console.error('Scrum creation error:', error);
-      alert(error instanceof Error ? `스크럼 생성 실패: ${error.message}` : '알 수 없는 오류 발생');
+      console.error(isEditMode ? 'Scrum update error:' : 'Scrum creation error:', error);
+      alert(error instanceof Error ? `스크럼 ${isEditMode ? '수정' : '생성'} 실패: ${error.message}` : '알 수 없는 오류 발생');
     } finally {
       setIsSubmitting(false);
     }
@@ -311,7 +354,11 @@ const ScrumPage = () => {
       <div className={styles.gridContainer}>
         {scrums.length > 0 ? (
           scrums.map((scrum, index) => (
-            <div key={scrum.scrumId} className={styles.scrumCard}>
+            <div 
+              key={scrum.scrumId} 
+              className={`${styles.scrumCard} ${isUserParticipant(scrum) ? styles.editable : ''}`}
+              onClick={() => handleEditScrum(scrum)}
+            >
               <div className={styles.scrumContent}>
                 <h3 className={styles.projectName}>{scrum.project?.projectName || '알 수 없는 프로젝트'}</h3>
                 <div className={styles.participators}>
@@ -328,6 +375,11 @@ const ScrumPage = () => {
                   {scrum.others && <p><strong>기타:</strong> {scrum.others}</p>}
                 </div>
               </div>
+              {isUserParticipant(scrum) && (
+                <div className={styles.editOverlay}>
+                  <span className={styles.editText}>수정</span>
+                </div>
+              )}
             </div>
           ))
         ) : (
@@ -344,7 +396,7 @@ const ScrumPage = () => {
         <div className={styles.modal}>
           <div className={styles.modalContent}>
             <span className={styles.closeButton} onClick={() => setShowModal(false)}>&times;</span>
-            <h2>오늘의 스크럼 생성</h2>
+            <h2>{isEditMode ? '스크럼 수정' : '오늘의 스크럼 생성'}</h2>
             <form onSubmit={handleSubmitScrum}>
               <div className={styles.formSection}>
                 <label>프로젝트 선택</label>
@@ -352,6 +404,7 @@ const ScrumPage = () => {
                   value={selectedProject || ''} 
                   onChange={(e) => setSelectedProject(Number(e.target.value))}
                   required
+                  disabled={isEditMode}
                 >
                   <option value="">프로젝트를 선택하세요</option>
                   {userProjects.map(project => (
@@ -392,7 +445,7 @@ const ScrumPage = () => {
               </div>
 
               <button type="submit" className={styles.saveButton} disabled={isSubmitting}>
-                {isSubmitting ? '생성 중...' : '스크럼 생성'}
+                {isSubmitting ? (isEditMode ? '수정 중...' : '생성 중...') : (isEditMode ? '스크럼 수정' : '스크럼 생성')}
               </button>
             </form>
           </div>

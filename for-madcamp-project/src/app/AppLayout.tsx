@@ -39,7 +39,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <>
       {showHeader && <Header />}
-      <main className={showHeader ? "main-content" : ""}>{children}</main>
+      <main className={showHeader ? "main-content" : ""} style={{ marginTop: 0 }}>{children}</main>
     </>
   );
 } 

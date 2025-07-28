@@ -128,9 +128,25 @@
     align-items: center;
     border: 1px solid #e0e0e0;
     transition: all 0.3s ease;
-    cursor: pointer;
+    cursor: default;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     min-height: 200px;
+    position: relative;
+    overflow: hidden;
+}
+
+.scrumCard.editable {
+    cursor: pointer;
+}
+
+.scrumCard.editable:hover {
+    background-color: #f0f0f0;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+.scrumCard.editable:hover .scrumContent {
+    opacity: 0.3;
 }
 
 .scrumCard:hover {
@@ -153,6 +169,50 @@
     color: #333;
     margin-bottom: 0.5rem;
     text-align: center;
+}
+
+.editButton {
+    padding: 0.3rem 0.8rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #fff;
+    background-color: #006D94;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.editButton:hover {
+    background-color: #005a7a;
+}
+
+.editOverlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+}
+
+.scrumCard.editable:hover .editOverlay {
+    opacity: 1;
+}
+
+.editText {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #006D94;
+    background-color: rgba(255, 255, 255, 0.9);
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 .participators {

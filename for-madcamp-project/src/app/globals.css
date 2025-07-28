@@ -76,5 +76,5 @@ body {
 }
 
 .main-content {
-  padding-top: 60px; /* Header height */
+  margin-top: 60px; /* Header height */
 }
