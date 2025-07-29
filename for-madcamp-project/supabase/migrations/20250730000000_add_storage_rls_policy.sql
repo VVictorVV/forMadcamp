@@ -1,10 +1,14 @@
--- Grant authenticated users access to the 'project-images' bucket.
--- This policy allows any authenticated user to upload files.
+-- Grant authenticated users access to the 'project-images' and 'profile-images' buckets.
+-- This policy allows any authenticated user to upload files to either bucket.
+DROP POLICY IF EXISTS "Enable insert for authenticated users" ON storage.objects;
 CREATE POLICY "Enable insert for authenticated users"
 ON storage.objects
 FOR INSERT
 TO authenticated
-WITH CHECK (bucket_id = 'project-images' AND auth.uid() = owner);
+WITH CHECK (
+  (bucket_id = 'project-images' OR bucket_id = 'profile-images') AND 
+  auth.uid() = owner
+);
 
 -- This policy allows authenticated users to view their own images.
 CREATE POLICY "Enable read access for own images"

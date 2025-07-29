@@ -1,0 +1,24 @@
+.scoop {
+  width: 100%;
+  height: 100%;
+  background-color: var(--scoop-color, white);
+  
+  /* 
+    The mask creates a truly transparent cutout.
+    - It defines a circular gradient at the bottom-right corner.
+    - The circle with radius '--scoop-size' is made transparent.
+    - Everything outside the circle is made opaque (black), revealing the shape.
+  */
+  mask: radial-gradient(
+      circle at bottom right, 
+      transparent 0,
+      transparent var(--scoop-size, 50px), 
+      black var(--scoop-size, 50px)
+  );
+  -webkit-mask: radial-gradient(
+      circle at bottom right, 
+      transparent 0,
+      transparent var(--scoop-size, 50px), 
+      black var(--scoop-size, 50px)
+  );
+} 

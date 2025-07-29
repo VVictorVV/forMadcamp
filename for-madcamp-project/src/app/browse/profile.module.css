@@ -14,7 +14,34 @@
 .headerContent {
   display: flex;
   align-items: center; /* 세로 중앙 정렬 */
-  gap: 1.5rem;
+  gap: 2rem;
+  width: 100%;
+}
+
+.avatarWrapper {
+    cursor: pointer;
+    position: relative;
+    border-radius: 50%;
+}
+
+.avatarWrapper.editable::after {
+    content: '✏️';
+    position: absolute;
+    bottom: 5px;
+    right: 5px;
+    background-color: white;
+    border-radius: 50%;
+    padding: 5px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s;
+}
+
+.avatarWrapper.editable:hover::after {
+    transform: scale(1.1);
 }
 
 .avatar {

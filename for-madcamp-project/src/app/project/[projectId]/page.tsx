@@ -1,15 +1,17 @@
 'use client';
 
-import React, { useState, useEffect, useCallback, ChangeEvent, useRef, useLayoutEffect } from 'react';
+import React, { useState, useEffect, useCallback, ChangeEvent, useRef } from 'react';
 import { useParams } from 'next/navigation';
 import { supabase } from '../../../../lib/supabaseClient';
 import styles from './projectDetail.module.css';
 import { type User } from '@supabase/supabase-js';
 import ReactMarkdown from 'react-markdown';
+import Link from 'next/link';
 import Lightbox from "yet-another-react-lightbox";
 import "yet-another-react-lightbox/styles.css";
+import ScoopedCorner from '../../../components/ScoopedCorner';
 
-// --- Data Interfaces ---
+// 데이터 구조 정의
 interface Project {
   project_id: number;
   project_name: string;
@@ -18,110 +20,83 @@ interface Project {
   representative_image_uri: string | null;
 }
 
-interface Participator {
-    profile_id: string;
-    role: string;
+interface ParticipantProfile {
+  id: string;
+  name: string | null;
+  profile_image_uri: string | null;
+  role: string | null;
 }
 
 const ProjectDetailPage = () => {
   const params = useParams();
   const projectId = params.projectId as string;
-  
+
+  // 상태 변수
   const [project, setProject] = useState<Project | null>(null);
-  const [participators, setParticipators] = useState<Participator[]>([]);
+  const [participants, setParticipants] = useState<ParticipantProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
-  const [user, setUser] = useState<User | null>(null);
-  const [isParticipant, setIsParticipant] = useState(false);
-
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [isOwner, setIsOwner] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
-  const [openLightbox, setOpenLightbox] = useState(false);
   const [editedProject, setEditedProject] = useState<Partial<Project>>({});
   const [newImageFile, setNewImageFile] = useState<File | null>(null);
-  const [isSaving, setIsSaving] = useState(false);
+  const [openLightbox, setOpenLightbox] = useState(false);
 
-  const titleRef = useRef<HTMLDivElement>(null);
-  const bannerRef = useRef<HTMLDivElement>(null); // Changed from bannerWrapperRef
-  const [clipPathStyle, setClipPathStyle] = useState({});
+  // The complex useLayoutEffect for clip-path is now removed.
 
-  useLayoutEffect(() => {
-    const generateClipPath = () => {
-      if (!titleRef.current || !bannerRef.current) return;
-  
-      const W = bannerRef.current.offsetWidth;
-      const H = bannerRef.current.offsetHeight;
-  
-      const titleW = titleRef.current.offsetWidth;
-      const titleH = titleRef.current.offsetHeight;
-  
-      const r = 20; // 전체 모서리 둥글기
-  
-      if (W === 0 || H === 0) return;
-  
-      // ✅ 탭 바탕은 이미지 위로 흰색이 올라오도록 clip-path를 반대로 생성
-      const path = [
-        `M 0 ${r}`,                          // 왼쪽 아래쪽에서 시작
-        `A ${r} ${r} 0 0 1 ${r} 0`,          // 왼쪽 위 둥글게
-        `H ${titleW}`,                       // 제목 칸 가로 길이만큼 직선
-        `Q ${titleW} 0 ${titleW} ${titleH}`, // 제목 칸만큼 아래로 파임
-        `H ${W - r}`,                        // 오른쪽으로 이동
-        `A ${r} ${r} 0 0 1 ${W} ${r}`,       // 오른쪽 위 둥글게
-        `V ${H - r}`,                        // 아래쪽으로
-        `A ${r} ${r} 0 0 1 ${W - r} ${H}`,   // 오른쪽 아래 둥글게
-        `H ${r}`,                            // 왼쪽으로
-        `A ${r} ${r} 0 0 1 0 ${H - r}`,      // 왼쪽 아래 둥글게
-        `Z`
-      ].join(' ');
-  
-      setClipPathStyle({
-        clipPath: `path('${path}')`,
-        WebkitClipPath: `path('${path}')`
-      });
-    };
-  
-    generateClipPath();
-    window.addEventListener('resize', generateClipPath);
-    return () => window.removeEventListener('resize', generateClipPath);
-  }, [project, isEditMode]);
-  
-  
-  
+  const handleEditToggle = () => {
+    if (isEditMode) {
+      // Cancel edits
+      setEditedProject(project!);
+      setNewImageFile(null);
+    }
+    setIsEditMode(!isEditMode);
+  };
+
+  const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setEditedProject(prev => ({ ...prev, [name]: value }));
+  };
 
   const handleImageUpload = async (event: ChangeEvent<HTMLInputElement>) => {
     if (!event.target.files || event.target.files.length === 0) return;
     const file = event.target.files[0];
     setNewImageFile(file);
-    
-    const maxFileSize = 10 * 1024 * 1024;
-    if (file.size > maxFileSize) {
-        alert(`File size cannot exceed 10MB.`);
-        return;
-    }
 
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) return alert('You must be logged in to upload an image.');
-
+    // Show a preview of the new image
     const previewUrl = URL.createObjectURL(file);
-    setEditedProject(prev => ({ 
-        ...prev, 
-        representative_image_uri: previewUrl 
+    setEditedProject(prev => ({
+      ...prev,
+      representative_image_uri: previewUrl
     }));
   };
-
+  
   const handleSave = async () => {
-    setIsSaving(true);
-    setError(null);
-    let imageUrl = editedProject.representative_image_uri || project?.representative_image_uri;
-    
+    if (!project) return;
+
+    // A simple check to see if anything has changed
+    const hasTextChanged = 
+        editedProject.project_name !== project.project_name ||
+        editedProject.planning !== project.planning ||
+        editedProject.description !== project.description;
+
+    if (!newImageFile && !hasTextChanged) {
+        setIsEditMode(false);
+        return; // Nothing to save
+    }
+
+    let imageUrl = project.representative_image_uri;
+
     try {
         const { data: { session } } = await supabase.auth.getSession();
-        if (!session) throw new Error('Authentication required.');
+        if (!session) throw new Error('Authentication required to save.');
 
+        // 1. Upload new image if it exists
         if (newImageFile) {
             const formData = new FormData();
             formData.append('file', newImageFile);
-            
+
             const uploadResponse = await fetch('/api/projects/upload', {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${session.access_token}` },
@@ -136,6 +111,7 @@ const ProjectDetailPage = () => {
             imageUrl = url;
         }
 
+        // 2. Update project details
         const updateData = {
             project_name: editedProject.project_name,
             planning: editedProject.planning,
@@ -145,78 +121,104 @@ const ProjectDetailPage = () => {
 
         const updateResponse = await fetch(`/api/projects/${projectId}`, {
             method: 'PUT',
-            headers: { 
+            headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${session.access_token}` 
+                'Authorization': `Bearer ${session.access_token}`
             },
             body: JSON.stringify(updateData),
         });
 
         if (!updateResponse.ok) {
             const errorData = await updateResponse.json();
-            throw new Error(errorData.error || 'Failed to update project details.');
+            throw new Error(errorData.error || 'Failed to update project.');
         }
-        
+
+        // 3. Refresh data and exit edit mode
         await fetchProjectData();
         setIsEditMode(false);
         setNewImageFile(null);
 
     } catch (err: any) {
         setError(err.message);
-        console.error(err);
-    } finally {
-        setIsSaving(false);
+        console.error("Save failed:", err);
     }
   };
-  
-  const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setEditedProject(prev => ({ ...prev, [name]: value }));
-  };
 
-  const handleEditToggle = () => {
-    if (isEditMode) {
-      setEditedProject(project!);
-    }
-    setIsEditMode(!isEditMode);
-  };
-
+  // 데이터 가져오기 로직
   const fetchProjectData = useCallback(async () => {
     if (!projectId) return;
     setLoading(true);
     setError(null);
-    
+
     try {
-        const { data: projectData, error: projectError } = await supabase
-            .from('PROJECTS')
-            .select('*')
-            .eq('project_id', projectId)
-            .single();
-    
-        if (projectError) throw new Error('Failed to fetch project details.');
-        setProject(projectData);
-        setEditedProject(projectData);
-    
-        const { data: participatorData, error: participatorError } = await supabase
-            .from('PARTICIPATOR')
-            .select('profile_id, role')
-            .eq('project_id', projectId);
-    
-        if (participatorError) throw new Error('Failed to fetch project members.');
-        setParticipators(participatorData);
-    
-        const { data: { session } } = await supabase.auth.getSession();
-        setUser(session?.user ?? null);
-        if (session?.user && participatorData) {
-            const isMember = participatorData.some(p => p.profile_id === session.user.id);
-            setIsParticipant(isMember);
-        }
-    
+      // Step 1: Get current user session
+      const { data: { session } } = await supabase.auth.getSession();
+      setCurrentUser(session?.user ?? null);
+
+      // Step 2: Fetch project details
+      const { data: projectData, error: projectError } = await supabase
+        .from('PROJECTS')
+        .select('*')
+        .eq('project_id', projectId)
+        .single();
+
+      if (projectError) {
+        throw new Error(`프로젝트 정보를 불러오는 데 실패했습니다: ${projectError.message}`);
+      }
+      setProject(projectData);
+      setEditedProject(projectData);
+
+      // Step 3: Fetch participants and their profiles
+      const { data: participatorData, error: participatorError } = await supabase
+        .from('PARTICIPATOR')
+        .select('profile_id, role')
+        .eq('project_id', projectId);
+
+      if (participatorError) throw new Error('프로젝트 참여자 정보를 불러오는 데 실패했습니다.');
+
+      let fetchedParticipants: ParticipantProfile[] = [];
+      if (participatorData && participatorData.length > 0) {
+        const profileIds = participatorData.map(p => p.profile_id);
+        const { data: profilesData, error: profilesError } = await supabase
+          .from('PROFILES')
+          .select('id, name, profile_image_uri')
+          .in('id', profileIds);
+
+        if (profilesError) throw new Error('참여자 프로필 정보를 불러오는 데 실패했습니다.');
+
+        fetchedParticipants = participatorData.map(p => {
+          const profile = profilesData?.find(pd => pd.id === p.profile_id);
+          return {
+            id: p.profile_id,
+            name: profile?.name || 'Unknown User',
+            profile_image_uri: profile?.profile_image_uri,
+            role: p.role,
+          };
+        });
+        setParticipants(fetchedParticipants);
+      }
+      
+      // Step 4: Determine if the current user is a participant (owner)
+      console.log('--- Debugging Project Ownership ---');
+      console.log('Current User ID:', session?.user?.id);
+      console.log('Fetched Participants:', fetchedParticipants);
+
+      if (session?.user && fetchedParticipants.length > 0) {
+        const isUserOwner = fetchedParticipants.some(p => p.id === session.user.id);
+        console.log('Is Current User The Owner?', isUserOwner);
+        setIsOwner(isUserOwner);
+      } else {
+        console.log('No session or no participants, setting owner to false.');
+        setIsOwner(false);
+      }
+      console.log('------------------------------------');
+
+
     } catch (err: any) {
-        setError(err.message);
-        console.error(err);
+      setError(err.message);
+      console.error(err);
     } finally {
-        setLoading(false);
+      setLoading(false);
     }
   }, [projectId]);
 
@@ -224,152 +226,161 @@ const ProjectDetailPage = () => {
     fetchProjectData();
   }, [fetchProjectData]);
 
+  // This useEffect is no longer needed as the logic is consolidated in fetchProjectData
+  /*
+  useEffect(() => {
+    if (currentUser && participants.length > 0) {
+      const isUserParticipant = participants.some(p => p.id === currentUser.id);
+      setIsOwner(isUserParticipant);
+    } else {
+      setIsOwner(false);
+    }
+  }, [currentUser, participants]);
+  */
+
   if (loading) {
-      return <div className={styles.pageContainer}><p>Loading project...</p></div>;
+    return <div className={styles.pageContainer}><p>프로젝트를 불러오는 중...</p></div>;
   }
 
   if (error) {
-      return <div className={styles.pageContainer}><p className={styles.errorText}>{error}</p></div>;
+    return <div className={styles.pageContainer}><p className={styles.errorText}>{error}</p></div>;
   }
 
   if (!project) {
-      return <div className={styles.pageContainer}><p>Project not found.</p></div>;
+    return <div className={styles.pageContainer}><p>프로젝트를 찾을 수 없습니다.</p></div>;
   }
 
   return (
     <div className={styles.pageContainer}>
-    <input 
-      type="file" 
-      id="imageUpload" 
-      style={{ display: 'none' }} 
-      onChange={handleImageUpload} 
-      accept="image/*"
-    />
-    <div className={styles.bannerArea}>
-      {/* The title is positioned absolutely relative to bannerArea */}
-      <div className={styles.titleHeader} ref={titleRef}>
-        {isEditMode ? (
-          <input
-            type="text"
-            name="project_name"
-            value={editedProject.project_name || ''}
-            onChange={handleInputChange}
-            className={styles.titleInput}
-            placeholder="Project Title"
-          />
-        ) : (
-          <div className={styles.titleInput} style={{ borderBottom: 'none' }}>
-            {project?.project_name}
-          </div>
-        )}
-      </div>
+        <input 
+            type="file" 
+            id="imageUpload" 
+            style={{ display: 'none' }} 
+            onChange={handleImageUpload} 
+            accept="image/*"
+        />
+        <div className={styles.bannerArea}>
+            <div 
+                className={styles.bannerContent}
+                style={{
+                  backgroundImage: (editedProject.representative_image_uri || project?.representative_image_uri)
+                    ? `url(${editedProject.representative_image_uri || project.representative_image_uri})`
+                    : 'none',
+                }}
+                onClick={() => {
+                    if (isEditMode) {
+                        document.getElementById('imageUpload')?.click();
+                    } else if (project?.representative_image_uri) {
+                        setOpenLightbox(true);
+                    }
+                }}
+            >
+                {isEditMode && (
+                    <label htmlFor="imageUpload" className={styles.uploadButton}>+</label>
+                )}
+                {!(editedProject.representative_image_uri || project?.representative_image_uri) && (
+                     <div className={styles.defaultBanner}>
+                        <span>{isEditMode ? "Select an image to upload" : "No representative image."}</span>
+                     </div>
+                )}
+            </div>
+            {/* The ScoopedCorner is now an overlay */}
+            <div className={styles.scoopOverlay}>
+                <ScoopedCorner 
+                    size={80} 
+                    color="rgba(255, 255, 255, 0.5)" // Semi-transparent white
+                    backgroundColor="transparent"
+                />
+            </div>
+            <div className={styles.titleHeader}>
+                {isEditMode ? (
+                    <input
+                        type="text"
+                        name="project_name"
+                        value={editedProject.project_name || ''}
+                        onChange={handleInputChange}
+                        className={styles.titleInput}
+                        placeholder="Project Title"
+                    />
+                ) : (
+                    <div className={styles.titleText}>
+                        {project.project_name}
+                    </div>
+                )}
+            </div>
+        </div>
 
-      {/* ✅ background-image → <img> 로 변경 */}
-      <div 
-        ref={bannerRef}
-        className={styles.banner}
-        style={clipPathStyle}   // ✅ clip-path 스타일만 유지
-      >
-        {/* ✅ 이미지 태그로 변경 */}
-        { (editedProject.representative_image_uri || project?.representative_image_uri) && (
-          <img
-            src={editedProject.representative_image_uri 
-                ? editedProject.representative_image_uri
-                : (project?.representative_image_uri ?? '')}
-            alt="banner"
-            className={styles.bannerImage}
-            onClick={() => {
-              if (isEditMode) {
-                document.getElementById('imageUpload')?.click();
-              } else if (project?.representative_image_uri) {
-                setOpenLightbox(true);
-              }
-            }}
-          />
-        )}
-
-        {/* Default banner text and upload button now live inside the clipped banner */}
-        {isEditMode && (
-          <label htmlFor="imageUpload" className={styles.uploadButton}>+</label>
-        )}
-        {!project?.representative_image_uri && !editedProject.representative_image_uri && (
-          <div className={styles.defaultBanner}>
-            <span>{isEditMode ? "Select an image to upload" : "No representative image."}</span>
-          </div>
-        )}
-      </div>
+        <div className={styles.contentBody}>
+            <div className={styles.mainContent}>
+                <div className={styles.contentSection}>
+                    <h2>Planning</h2>
+                    <div className={styles.markdownContent}>
+                        {isEditMode ? (
+                            <textarea
+                                name="planning"
+                                value={editedProject.planning || ''}
+                                onChange={handleInputChange}
+                                className={styles.textarea}
+                                placeholder="Project Planning (Markdown supported)"
+                            />
+                        ) : (
+                            <ReactMarkdown>{project.planning || '작성된 계획이 없습니다.'}</ReactMarkdown>
+                        )}
+                    </div>
+                </div>
+                
+                <div className={styles.contentSection}>
+                    <h2>Description</h2>
+                    <div className={styles.markdownContent}>
+                        {isEditMode ? (
+                            <textarea
+                                name="description"
+                                value={editedProject.description || ''}
+                                onChange={handleInputChange}
+                                className={styles.textarea}
+                                placeholder="Project Description (Markdown supported)"
+                            />
+                        ) : (
+                            <ReactMarkdown>{project.description || '작성된 설명이 없습니다.'}</ReactMarkdown>
+                        )}
+                    </div>
+                </div>
+            </div>
+            <aside className={styles.sidebar}>
+                {isOwner && (
+                    <button 
+                        onClick={isEditMode ? handleSave : handleEditToggle}
+                        className={isEditMode ? styles.saveButton : styles.editButton}
+                    >
+                        {isEditMode ? 'Save' : 'Edit'}
+                    </button>
+                )}
+                <h3>프로젝트 멤버</h3>
+                {participants.length > 0 ? (
+                    <div className={styles.participantsList}>
+                        {participants.map(p => (
+                            <Link key={p.id} href={`/browse/${p.id}`} className={styles.participantCard}>
+                                <img 
+                                    src={p.profile_image_uri || '/default_person.svg'} 
+                                    alt={p.name || 'participant'}
+                                    className={styles.participantAvatar}
+                                />
+                                <span className={styles.participantName}>{p.name}</span>
+                            </Link>
+                        ))}
+                    </div>
+                ) : (
+                    <p>참여 멤버 정보 없음</p>
+                )}
+            </aside>
+        </div>
+        
+        <Lightbox
+            open={openLightbox}
+            close={() => setOpenLightbox(false)}
+            slides={(editedProject.representative_image_uri || project.representative_image_uri) ? [{ src: (editedProject.representative_image_uri || project.representative_image_uri) as string }] : []}
+        />
     </div>
-    
-    <Lightbox
-        open={openLightbox}
-        close={() => setOpenLightbox(false)}
-        slides={project?.representative_image_uri ? [{ src: project.representative_image_uri }] : []}
-    />
-
-    <div className={styles.content}>
-      <div className={styles.mainControls}>
-        {isParticipant && !isEditMode && (
-                      <button onClick={handleEditToggle} className={styles.editButton}>
-                          Edit
-                      </button>
-        )}
-      </div>
-
-              <section>
-                  <h3 className={styles.sectionTitle}>Planning</h3>
-                  {isEditMode ? (
-      <textarea
-          name="planning"
-          value={editedProject.planning || ''}
-          onChange={handleInputChange}
-          className={styles.textarea}
-                          placeholder="Enter project planning details here..."
-                      />
-                  ) : (
-                      <div className={styles.markdownDisplay}>
-                          {project.planning ? (
-                              <ReactMarkdown>{project.planning}</ReactMarkdown>
-                          ) : (
-                              <p>No planning content yet.</p>
-                          )}
-                      </div>
-                  )}
-              </section>
-
-              <section>
-                  <h3 className={styles.sectionTitle}>Description</h3>
-      {isEditMode ? (
-              <textarea
-                  name="description"
-                  value={editedProject.description || ''}
-                  onChange={handleInputChange}
-                          className={styles.textarea}
-                          placeholder="Enter project description here (Markdown supported)..."
-              />
-      ) : (
-          <div className={styles.markdownDisplay}>
-                          {project.description ? (
-                              <ReactMarkdown>{project.description}</ReactMarkdown>
-                          ) : (
-                              <p>No description provided.</p>
-                          )}
-          </div>
-      )}
-              </section>
-
-      {isEditMode && (
-          <div className={styles.buttonGroup}>
-                      <button onClick={handleEditToggle} className={styles.cancelButton} disabled={isSaving}>
-                          Cancel
-                      </button>
-                      <button onClick={handleSave} className={styles.saveButton} disabled={isSaving}>
-                  {isSaving ? 'Saving...' : 'Save'}
-              </button>
-          </div>
-      )}
-    </div>
-  </div>
-
   );
 };
 
