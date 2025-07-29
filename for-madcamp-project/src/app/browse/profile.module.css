@@ -1,12 +1,14 @@
 /* 전체 컨테이너 */
 .container {
   background-color: #ffffff;
-  padding: 4rem 12% 2rem; /* 상단 패딩 추가, 양옆 패딩 증가 */
+  padding: 2rem 10%; /* project 페이지와 통일 */
 }
 
 /* --- 프로필 헤더 --- */
 .profileHeader {
-  padding-bottom: 2rem; /* 헤더와 메인 콘텐츠 간격 */
+  padding-bottom: 2rem;
+  border-bottom: 1px solid #e5e7eb;
+  margin-bottom: 2rem;
 }
 
 .headerContent {
@@ -71,7 +73,7 @@
 }
 
 /* --- 수정 모드 필드 스타일 --- */
-.inputField, .textareaField, .inputFieldSidebar {
+.inputField, .textareaField {
   width: 100%;
   border: 1px solid #d1d5db;
   border-radius: 6px;
@@ -80,7 +82,7 @@
   background-color: #f9fafb;
   transition: border-color 0.2s;
 }
-.inputField:focus, .textareaField:focus, .inputFieldSidebar:focus {
+.inputField:focus, .textareaField:focus {
   outline: none;
   border-color: #006D94;
 }
@@ -102,12 +104,6 @@
   resize: vertical;
   min-height: 80px;
   font-family: inherit;
-}
-
-.inputFieldSidebar {
-  font-size: 1rem;
-  font-weight: 500;
-  color: #374151;
 }
 
 .userInfo {
@@ -137,6 +133,67 @@
 .interestDescription {
   margin: 0;
   color: #4b5563;
+}
+
+/* --- Project Cards on Browse Page --- */
+.projectsGrid {
+  display: flex;
+  gap: 1.5rem;
+  height: 250px; /* Or other appropriate fixed height */
+}
+
+.projectCard {
+  flex: 1;
+  position: relative;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  transition: flex 0.4s ease-in-out;
+  background-color: white;
+  background-size: cover;
+  background-position: center;
+  border: 1px solid #e5e7eb;
+  color: inherit;
+  text-decoration: none;
+  display: block; /* For Link tag */
+}
+
+.projectCard:hover {
+  flex: 4;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+}
+
+.projectCardContent {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+}
+
+.projectCardOverlay {
+    background-color: rgba(0, 0, 0, 0.4);
+}
+
+.projectCardTitle {
+    font-size: 1.25rem;
+    font-weight: bold;
+    color: white;
+    padding: 0 1rem;
+    text-align: center;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7);
+}
+
+.projectCardEmptyTitle {
+    font-size: 1.25rem;
+    font-weight: bold;
+    color: #333;
+}
+
+.projectCardNoImageTitle {
+    font-size: 1.25rem;
+    font-weight: bold;
+    color: #006D94; /* Primary color */
 }
 
 /* 수정 모드 */
@@ -187,25 +244,18 @@
 
 /* --- 메인 컨텐츠 --- */
 .mainWrapper {
-  border-top: 1px solid #e5e7eb;
-  padding-top: 2rem;
-}
-
-.contentGrid {
-  display: grid;
-  grid-template-columns: 2fr 1fr;
-  gap: 3rem;
+  /* No special styles needed, acts as a container */
 }
 
 .section {
-  margin-bottom: 2.5rem;
+  margin-bottom: 3rem;
 }
 
 .sectionTitle {
-  font-size: 1.25rem;
+  font-size: 1.5rem;
   font-weight: 600;
   color: #111827;
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;
 }
 
 .aboutText {
@@ -214,7 +264,74 @@
   font-size: 1rem;
 }
 
-/* 사이드바 */
+/* --- Others Section --- */
+.othersSection {
+  margin-top: 2rem;
+}
+
+.othersSubTitle {
+  font-size: 1.2rem;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.profilesGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 2rem;
+}
+
+.profileLink {
+  text-decoration: none;
+  color: inherit;
+  transition: transform 0.2s ease-in-out;
+  display: block;
+}
+.profileLink:hover {
+  transform: translateY(-5px);
+}
+
+.profileItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  text-align: center;
+}
+
+.profileImage {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+  background-color: #e0e0e0;
+  border: 2px solid #f9fafb;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
+}
+
+.profileName {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #4b5563;
+}
+
+/* --- Re-adding previously removed styles --- */
+.contentGrid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 3rem;
+  margin-bottom: 2rem;
+}
+
+.leftColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
 .sidebar {
   display: flex;
   flex-direction: column;
@@ -235,60 +352,37 @@
   align-items: center;
   background-color: #f0f7ff;
   border-radius: 50%;
-  color: #006D94; /* 기본 아이콘 색상 (활성 상태) */
+  color: #006D94;
   font-size: 1.1rem;
 }
 
 .iconInactive {
-  color: #adb5bd; /* 비활성 상태 아이콘 색상 (회색) */
-  background-color: #f1f3f5; /* 비활성 시 배경색도 변경 */
+  color: #adb5bd;
+  background-color: #f1f3f5;
 }
 
-/* Experience 카드 (기존과 동일) */
-.experienceGrid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
+.sidebarLabel {
+  font-weight: 500;
+}
+
+.interestViewContainer {
+  display: flex;
+  flex-direction: column;
   gap: 1.5rem;
 }
 
-.experienceCard {
-  border: 1px solid #e5e7eb;
-  border-radius: 12px;
-  padding: 1.5rem;
-  display: flex;
-  flex-direction: column;
+.interestViewItem {
+  border-left: 3px solid #006D94;
+  padding-left: 1rem;
 }
 
-.expCardHeader {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  margin-bottom: 1rem;
-}
-
-.expCardIcon {
-  width: 48px;
-  height: 48px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  border-radius: 8px;
-  background-color: #f3f4f6;
-}
-
-.expCardTitle {
-  font-size: 1rem;
+.interestTitle {
+  font-size: 1.1rem;
   font-weight: 600;
-  color: #111827;
-}
-.expCardCompany {
-  font-size: 0.875rem;
-  color: #6b7280;
+  margin: 0 0 0.25rem 0;
 }
 
-.expCardDate {
-  font-size: 0.875rem;
-  color: #6b7280;
-  margin-top: auto; /* 날짜를 하단으로 밀어냄 */
-  padding-top: 1rem;
+.interestDescription {
+  margin: 0;
+  color: #4b5563;
 } 
