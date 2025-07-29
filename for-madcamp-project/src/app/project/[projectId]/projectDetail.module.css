@@ -2,100 +2,107 @@
     margin: 2rem auto;
     padding: 0 2rem;
     max-width: 960px;
+    font-family: 'AstaSans-Regular', sans-serif;
+}
+
+.errorText {
+    color: #e53e3e;
+    text-align: center;
+    font-size: 1.2rem;
 }
 
 .bannerArea {
-    position: relative;
-    padding-top: 2.5rem; /* Make space for the tab */
-    margin-bottom: 2rem;
+  position: relative;
+  width: 100%;
 }
+
+.banner {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16/9;
+  /* 테두리 효과를 위한 안쪽 그림자 */
+  box-shadow: inset 0 0 0 3px black;
+  /* 👇 clip-path가 실제 이미지에 먹히게 만듦 */
+  clip-path: var(--dynamic-clip);
+  -webkit-clip-path: var(--dynamic-clip);
+  overflow: hidden; /* 필수: 잘린 부분 숨기기 */
+}
+
+.bannerImage {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
 
 .titleHeader {
-    position: absolute;
-    top: 0;
-    left: 2rem;
-    z-index: 2;
-    background-color: white;
-    padding: 0.75rem 1.5rem;
-    border-radius: 12px 12px 0 0;
-    /* 수정: 그림자 효과를 이미지와 같이 더 은은하게 변경 */
-    box-shadow: 0 2px 8px -2px rgba(0,0,0,0.15);
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 10;
+  color: white;
+  padding: 0.75rem 1.5rem;
+  white-space: nowrap;
+  background-color: white;   /* ✅ 탭은 흰색 */
+  border-top-left-radius: 20px;  /* 둥글게 마감 */
+  border-top-right-radius: 20px; /* 필요하면 오른쪽도 둥글게 */
 }
 
-/* This pseudo-element creates the illusion of a scooped inner corner */
-.titleHeader::after {
-    content: '';
-    position: absolute;
-    bottom: -1px; /* To align with the banner's border */
-    right: -20px;
-    width: 20px;
-    height: 20px;
-    background-color: transparent;
-    border-top-left-radius: 10px;
-    box-shadow: -10px -10px 0 10px white; /* Must be the same color as the tab background */
-}
+/* 제거: ::after 의사 요소는 더 이상 필요 없습니다. */
 
 .titleInput {
     font-size: 1.8rem;
     font-weight: bold;
-    color: #333;
+    color: white;
     border: none;
     background: transparent;
     padding: 0;
     outline: none;
     width: 100%;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.5); /* 텍스트 가독성 향상 */
 }
-.titleInput:not([readOnly]) {
-    border-bottom: 2px solid #006D94;
-}
-
-.banner {
-    position: relative;
-    z-index: 1;
-    width: 100%;
-    padding-top: 56.25%; /* 16:9 Aspect Ratio */
-    /* 수정: 배경색을 이미지와 유사한 밝은 회색으로 명확히 함 */
-    background-color: #f8f9fa;
-    border-radius: 12px;
-    /* 수정: 그림자 효과를 이미지와 같이 더 은은하게 변경 */
-    box-shadow: 0 4px 12px -4px rgba(0,0,0,0.1);
-    overflow: hidden;
+.titleInput[readOnly] {
+    border-bottom: none;
 }
 
-.bannerImage,
+/* 제거: .bannerImage는 더 이상 사용되지 않습니다. */
+
 .defaultBanner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #a0aec0;
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    object-fit: cover;
-    border-radius: 12px;
 }
 
 /* --- "Project 1" 이미지의 '+' 버튼과 일치시키기 위한 주요 수정 영역 --- */
 .uploadButton {
     position: absolute;
-    top: 12px;  /* 위치 미세 조정 */
-    right: 12px; /* 위치 미세 조정 */
-    width: 24px;   /* 크기 조정 */
-    height: 24px;  /* 크기 조정 */
-    background-color: #6c757d; /* 이미지와 동일한 단색 회색으로 변경 */
+    top: 12px;
+    right: 12px;
+    width: 32px;
+    height: 32px;
+    background-color: rgba(0, 0, 0, 0.6);
     color: white;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 16px;  /* 아이콘(+) 크기에 맞게 폰트 크기 조정 */
-    font-weight: 500; /* 폰트 굵기 조정 */
+    font-size: 20px;
+    font-weight: 500;
     cursor: pointer;
-    border: none;     /* 흰색 테두리 제거 */
-    transition: background-color 0.2s;
+    border: 2px solid white;
+    transition: background-color 0.2s, transform 0.2s;
     z-index: 3;
 }
 
 .uploadButton:hover {
-    background-color: #5a6268; /* 호버 시 배경색 변경 */
+    background-color: rgba(0, 0, 0, 0.8);
+    transform: scale(1.1);
 }
 /* --- 수정 완료 --- */
 
@@ -112,10 +119,10 @@
 .sectionTitle {
     font-size: 1.5rem;
     font-weight: 600;
-    color: #555;
-    margin-top: 1rem;
-    margin-bottom: 0.5rem;
-    border-bottom: 2px solid #eee;
+    color: #374151;
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+    border-bottom: 1px solid #e2e8f0;
     padding-bottom: 0.5rem;
 }
 
@@ -128,11 +135,8 @@
     font-size: 1rem;
     line-height: 1.6;
     resize: vertical;
-    transition: background-color 0.2s, border-color 0.2s;
-}
-.textarea:not([readOnly]) {
-    border-color: #ccc;
     background-color: #f8f9fa;
+    font-family: inherit;
 }
 
 .markdownEditorContainer {
@@ -170,14 +174,7 @@
     background-color: #f0f8ff;
 }
 
-.buttonGroup {
-    display: flex;
-    justify-content: flex-end;
-    gap: 1rem;
-    margin-top: 1.5rem;
-}
-
-.actionButton {
+.saveButton, .cancelButton {
     padding: 0.75rem 2rem;
     font-size: 1rem;
     font-weight: 600;
@@ -207,9 +204,17 @@
     background-color: #5a6268;
 }
 
+.buttonGroup {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
 .markdownDisplay {
     padding: 0.5rem;
     line-height: 1.7;
+    color: #4a5568;
 }
 
 .markdownDisplay h1, .markdownPreview h1 {

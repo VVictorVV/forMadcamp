@@ -1,6 +1,12 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '../../../../lib/supabaseClient';
+import { createClient } from '@supabase/supabase-js';
 import { v4 as uuidv4 } from 'uuid';
+
+export const config = {
+  api: {
+    bodyParser: false,
+  },
+};
 
 export async function POST(req) {
   try {
@@ -10,7 +16,21 @@ export async function POST(req) {
       return NextResponse.json({ error: 'Authentication required.' }, { status: 401 });
     }
     const token = authHeader.replace('Bearer ', '');
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+
+    // Create a new Supabase client with the user's token
+    const supabaseWithAuth = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+      {
+        global: {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      }
+    );
+
+    const { data: { user }, error: authError } = await supabaseWithAuth.auth.getUser();
     if (authError || !user) {
       return NextResponse.json({ error: 'Authentication required.' }, { status: 401 });
     }
@@ -19,25 +39,37 @@ export async function POST(req) {
     const formData = await req.formData();
     const file = formData.get('file');
 
-    if (!file) {
+    console.log('--- File Upload Request Received ---');
+    console.log('File from FormData:', file);
+
+    if (!file || typeof file === 'string' || !file.name) {
+      console.error('Validation Failed: File is missing or not a file object.');
       return NextResponse.json({ error: 'File is required.' }, { status: 400 });
     }
+    
+    console.log(`File details: name=${file.name}, size=${file.size}, type=${file.type}`);
 
     // 3. 파일 유효성 검사 (MIME 타입, 크기 등)
     const allowedMimeTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']; // webp 형식 추가
     if (!allowedMimeTypes.includes(file.type)) {
-      return NextResponse.json({ error: 'Invalid file type. Only JPEG, PNG, GIF, WEBP are allowed.' }, { status: 400 });
+      console.error(`Validation Failed: Invalid file type - ${file.type}`);
+      return NextResponse.json({ error: `Invalid file type. Only JPEG, PNG, GIF, WEBP are allowed. Received: ${file.type}` }, { status: 400 });
     }
     
-    const maxFileSize = 5 * 1024 * 1024; // 5MB
+    const maxFileSize = 10 * 1024 * 1024; // 10MB로 상향
     if (file.size > maxFileSize) {
-        return NextResponse.json({ error: 'File size exceeds the 5MB limit.' }, { status: 400 });
+        console.error(`Validation Failed: File size ${file.size} exceeds the 10MB limit.`);
+        return NextResponse.json({ error: `File size exceeds the 10MB limit. Max: ${maxFileSize}, Received: ${file.size}` }, { status: 400 });
     }
 
+    console.log('File validation successful. Proceeding to upload...');
     // 4. Supabase Storage에 파일 업로드
-    // 파일 이름에 포함될 수 있는 한글 등 비ASCII 문자를 안전하게 인코딩합니다.
-    const fileName = `${user.id}/${uuidv4()}-${encodeURIComponent(file.name)}`;
-    const { data: uploadData, error: uploadError } = await supabase.storage
+    // 파일 이름에 포함될 수 있는 한글 등 비ASCII 문자를 안전하게 인코딩하는 대신,
+    // UUID와 확장자를 조합하여 새로운 파일 이름을 생성합니다.
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${user.id}/${uuidv4()}.${fileExt}`;
+    
+    const { data: uploadData, error: uploadError } = await supabaseWithAuth.storage
       .from('project-images') // 'project-images' 버킷 사용
       .upload(fileName, file);
 
@@ -47,7 +79,7 @@ export async function POST(req) {
     }
 
     // 5. 업로드된 파일의 공개 URL 가져오기
-    const { data: urlData } = supabase.storage
+    const { data: urlData } = supabaseWithAuth.storage
       .from('project-images')
       .getPublicUrl(fileName);
 

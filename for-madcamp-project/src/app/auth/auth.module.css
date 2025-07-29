@@ -80,6 +80,11 @@
     font-weight: 700;
     margin-bottom: 0;
 }
+
+.signupCard .title {
+    margin-bottom: 1.5rem;
+}
+
 .form { 
     position: relative; 
     display: flex; 

@@ -6,6 +6,11 @@ import styles from './auth.module.css'; // auth.module.css를 그대로 사용
 import { supabase } from "../../lib/supabaseClient";
 import { useAuth } from "../../context/AuthContext";
 
+interface CampClass {
+  class_id: number;
+  class_num: number;
+}
+
 const AuthPage = () => {
   const [isLoginView, setIsLoginView] = useState(true);
   const [email, setEmail] = useState('');
@@ -13,6 +18,8 @@ const AuthPage = () => {
   const [name, setName] = useState('');
   const [school, setSchool] = useState('');
   const [instagramUri, setInstagramUri] = useState('');
+  const [classId, setClassId] = useState<number | ''>('');
+  const [availableClasses, setAvailableClasses] = useState<CampClass[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const router = useRouter();
@@ -23,6 +30,18 @@ const AuthPage = () => {
       router.push('/');
     }
   }, [user, router]);
+
+  useEffect(() => {
+    const fetchClasses = async () => {
+      const { data, error } = await supabase.from('CAMP_CLASSES').select('*').order('class_num');
+      if (error) {
+        console.error('Error fetching classes:', error);
+      } else {
+        setAvailableClasses(data);
+      }
+    };
+    fetchClasses();
+  }, []);
 
   const handleAuthAction = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,7 +60,7 @@ const AuthPage = () => {
         const response = await fetch('/api/users/signup', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password, name, school, instagram_uri: instagramUri || null }),
+          body: JSON.stringify({ email, password, name, school, class_id: classId || null, instagram_uri: instagramUri || null }),
         });
         const data = await response.json();
         if (!response.ok) throw new Error(data.error || 'Signup failed.');
@@ -99,15 +118,48 @@ const AuthPage = () => {
                 <a href="#" onClick={toggleView} className={styles.link}>Log in</a>
               </div>
               <h1 className={styles.title}>Sign up</h1>
+              {error && <p className={styles.error}>{error}</p>}
               <form onSubmit={handleAuthAction} className={styles.form}>
-                <input type="email" placeholder="e-mail address" required className={styles.input} value={email} onChange={e => setEmail(e.target.value)} />
-                <input type="password" placeholder="password (min. 6 chars)" required className={styles.input} value={password} onChange={e => setPassword(e.target.value)} />
-                <input type="text" placeholder="Full Name" required className={styles.input} value={name} onChange={e => setName(e.target.value)} />
-                <input type="text" placeholder="School" className={styles.input} value={school} onChange={e => setSchool(e.target.value)} />
-                <input type="url" placeholder="Instagram URL (optional)" className={styles.input} value={instagramUri} onChange={e => setInstagramUri(e.target.value)} />
+                <div className={styles.inputGroup}>
+                    <span className={styles.inputIcon}>@</span>
+                    <input type="email" placeholder="e-mail address" required className={styles.input} value={email} onChange={e => setEmail(e.target.value)} />
+                </div>
+                <div className={styles.inputGroup}>
+                    <span className={styles.inputIcon}>🔑</span>
+                    <input type="password" placeholder="password (min. 6 chars)" required className={styles.input} value={password} onChange={e => setPassword(e.target.value)} />
+                </div>
+                <div className={styles.inputGroup}>
+                    <span className={styles.inputIcon}>👤</span>
+                    <input type="text" placeholder="Full Name" required className={styles.input} value={name} onChange={e => setName(e.target.value)} />
+                </div>
+                <div className={styles.inputGroup}>
+                    <span className={styles.inputIcon}>🏫</span>
+                    <input type="text" placeholder="School" className={styles.input} value={school} onChange={e => setSchool(e.target.value)} />
+                </div>
+                <div className={styles.inputGroup}>
+                    <span className={styles.inputIcon}>🎓</span>
+                    <select
+                        required
+                        className={styles.input}
+                        value={classId}
+                        onChange={e => setClassId(Number(e.target.value))}
+                        style={{ appearance: 'none' }} // 기본 화살표 제거
+                    >
+                        <option value="" disabled>분반을 선택하세요</option>
+                        {availableClasses.map(c => (
+                            <option key={c.class_id} value={c.class_id}>
+                                {c.class_num}분반
+                            </option>
+                        ))}
+                    </select>
+                </div>
+                <div className={styles.inputGroup}>
+                    <span className={styles.inputIcon}>🔗</span>
+                    <input type="url" placeholder="Instagram URL (optional)" className={styles.input} value={instagramUri} onChange={e => setInstagramUri(e.target.value)} />
+                </div>
                 <button type="submit" className={styles.signupButton}>Create Account</button>
               </form>
-              {error && <p className={styles.error}>{error}</p>}
+              {successMessage && <p className={styles.success}>{successMessage}</p>}
             </div>
           )}
         </div>
