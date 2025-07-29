@@ -3,32 +3,17 @@ import { supabase } from '../../../../../src/lib/supabaseClient'; // 올바른 �
 
 export async function POST(req) {
   try {
-    const { email, name, password, class_num, school, instagram_uri } = await req.json();
+    const { email, name, password, class_id, school, instagram_uri } = await req.json();
 
-    // 1. 필수 필드 유효성 검사 (school 포함)
-    if (!email || !password || !name || !class_num || !school) {
+    // 1. 필수 필드 유효성 검사 (class_id로 변경)
+    if (!email || !password || !name || !class_id || !school) {
       return NextResponse.json(
-        { error: 'Email, name, password, class number, and school are required.' },
+        { error: 'Email, name, password, class ID, and school are required.' },
         { status: 400 }
       );
     }
 
-    // 2. season_id=1과 class_num으로 class_id 찾기
-    const { data: classData, error: classError } = await supabase
-      .from('CAMP_CLASSES')
-      .select('class_id')
-      .eq('season_id', 1)
-      .eq('class_num', class_num)
-      .single();
-
-    if (classError || !classData) {
-      console.error('API Error - find class:', classError);
-      return NextResponse.json(
-        { error: 'Invalid class number for the current season.' },
-        { status: 404 }
-      );
-    }
-    const class_id = classData.class_id;
+    // 2. season_id=1과 class_num으로 class_id를 찾는 로직 제거 (이미 class_id를 받음)
 
     // 3. Supabase auth를 사용하여 신규 유저 생성
     const { data: signUpData, error: signUpError } = await supabase.auth.signUp({

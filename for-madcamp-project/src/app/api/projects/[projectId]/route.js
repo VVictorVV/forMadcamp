@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '../../../../../lib/supabaseClient';
+import { supabase } from '../../../../lib/supabaseClient';
+import { supabaseAdmin } from '../../../../lib/supabaseAdmin';
 
 export async function PUT(req, { params }) {
   try {
@@ -34,7 +35,7 @@ export async function PUT(req, { params }) {
 
     // 3. 요청 본문 파싱
     const requestBody = await req.json();
-    const { projectName, planning, progress, description, representativeImageUri } = requestBody;
+    const { project_name, planning, progress, description, representative_image_uri } = requestBody;
 
     // 4. 프로젝트 존재 여부 확인
     const { data: project, error: projectError } = await supabase
@@ -71,10 +72,10 @@ export async function PUT(req, { params }) {
 
     // 6. 업데이트할 데이터 준비
     const updateData = {};
-    if (projectName !== undefined) updateData.project_name = projectName;
+    if (project_name !== undefined) updateData.project_name = project_name;
     if (planning !== undefined) updateData.planning = planning;
     if (description !== undefined) updateData.description = description; // description 추가
-    if (representativeImageUri !== undefined) updateData.representative_image_uri = representativeImageUri; // 이미지 URI 업데이트 추가
+    if (representative_image_uri !== undefined) updateData.representative_image_uri = representative_image_uri; // 이미지 URI 업데이트 추가
     if (progress !== undefined) {
       if (progress < 0 || progress > 100) {
         return NextResponse.json(
@@ -85,19 +86,33 @@ export async function PUT(req, { params }) {
       updateData.progress = progress;
     }
 
-    // 7. 프로젝트 정보 업데이트
-    const { data: updatedProject, error: updateError } = await supabase
+    // 7. 프로젝트 정보 업데이트 (with admin privileges)
+    const { error: updateError } = await supabaseAdmin
       .from('PROJECTS')
       .update(updateData)
-      .eq('project_id', projectId)
-      .select('*')
-      .single();
+      .eq('project_id', projectId);
+
     if (updateError) {
       console.error('Project update error:', updateError);
       return NextResponse.json(
-        { error: 'Internal server error.' },
+        { error: 'Failed to update project.' },
         { status: 500 }
       );
+    }
+
+    // 업데이트된 프로젝트 정보 다시 조회
+    const { data: updatedProject, error: refetchError } = await supabase
+        .from('PROJECTS')
+        .select('*')
+        .eq('project_id', projectId)
+        .single();
+
+    if (refetchError || !updatedProject) {
+        console.error('Failed to refetch project data:', refetchError);
+        return NextResponse.json(
+            { error: 'Failed to retrieve updated project data.' },
+            { status: 500 }
+        );
     }
 
     // 8. 참여자 정보 조회 (profileId, name, role)
