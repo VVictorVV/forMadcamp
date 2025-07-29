@@ -301,4 +301,82 @@ export async function PUT(req, { params }) {
       { status: 500 }
     );
   }
+}
+
+// DELETE /api/polls/{pollId}
+export async function DELETE(req, { params }) {
+  try {
+    // 1. 인증 토큰 추출 및 검증
+    const authHeader = req.headers.get('authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return NextResponse.json(
+        { error: 'Authentication required.' },
+        { status: 401 }
+      );
+    }
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    if (authError || !user) {
+      return NextResponse.json(
+        { error: 'Authentication required.' },
+        { status: 401 }
+      );
+    }
+
+    // 2. pollId 파라미터 추출
+    const { pollId } = await params;
+    if (!pollId) {
+      return NextResponse.json(
+        { error: 'Poll ID is required.' },
+        { status: 400 }
+      );
+    }
+
+    // 3. 투표 정보 조회 (생성자 확인)
+    const { data: poll, error: pollError } = await supabase
+      .from('POLLS')
+      .select('poll_id, made_by')
+      .eq('poll_id', pollId)
+      .single();
+    if (pollError || !poll) {
+      return NextResponse.json(
+        { error: 'Poll not found.' },
+        { status: 404 }
+      );
+    }
+
+    // 4. 생성자 권한 확인
+    if (poll.made_by !== user.id) {
+      return NextResponse.json(
+        { error: 'You are not the creator of this poll.' },
+        { status: 403 }
+      );
+    }
+
+    // 5. 투표 삭제 (CASCADE로 인해 관련 데이터도 함께 삭제됨)
+    const { error: deleteError } = await supabase
+      .from('POLLS')
+      .delete()
+      .eq('poll_id', pollId);
+
+    if (deleteError) {
+      console.error('Poll deletion error:', deleteError);
+      return NextResponse.json(
+        { error: 'Internal server error.' },
+        { status: 500 }
+      );
+    }
+
+    // 6. 성공 응답
+    return NextResponse.json({
+      message: 'Poll has been successfully deleted.',
+      pollId: parseInt(pollId)
+    }, { status: 200 });
+  } catch (err) {
+    console.error('Unexpected server error:', err);
+    return NextResponse.json(
+      { error: 'Internal server error.' },
+      { status: 500 }
+    );
+  }
 } 

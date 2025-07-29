@@ -1,0 +1,490 @@
+/* 전체 컨테이너 */
+.container {
+  background-color: #ffffff;
+  padding: 2rem 20% 2rem;
+  min-height: 100vh;
+}
+
+/* --- 헤더 --- */
+.header {
+  margin-bottom: 2rem;
+}
+
+.backButton {
+  background: none;
+  border: none;
+  color: #6b7280;
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 0.5rem 0;
+  transition: color 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.backButton:hover {
+  color: #006D94;
+}
+
+/* --- 제목 섹션 --- */
+.titleSection {
+  margin-bottom: 3rem;
+  text-align: left;
+}
+
+.pollTitle {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 0.5rem 0;
+  line-height: 1.3;
+}
+
+.editButton {
+  background-color: #006D94;
+  border: none;
+  border-radius: 6px;
+  padding: 0.75rem 1.5rem;
+  color: white;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.editButton:hover {
+  background-color: #005c7a;
+  transform: translateY(-1px);
+}
+
+.deleteButton {
+  background-color: #f87171;
+  border: none;
+  border-radius: 6px;
+  padding: 0.75rem 1.5rem;
+  color: white;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.deleteButton:hover {
+  background-color: #ef4444;
+  transform: translateY(-1px);
+}
+
+.pollMeta {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.creatorInfo {
+  color: #6b7280;
+  font-size: 1.1rem;
+}
+
+/* --- 메인 콘텐츠 --- */
+.main {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.contentWrapper {
+  display: flex;
+  gap: 3rem;
+  align-items: flex-start;
+}
+
+/* --- 왼쪽 섹션 --- */
+.leftSection {
+  flex: 0 0 70%;
+}
+
+/* --- 오른쪽 섹션 --- */
+.rightSection {
+  flex: 0 0 30%;
+  position: sticky;
+  top: 2rem;
+}
+
+/* --- 투표 옵션 컨테이너 --- */
+.optionsContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+/* --- 투표 옵션 아이템 --- */
+.optionItem {
+  border: 3px solid transparent;
+  border-radius: 8px;
+  padding: 1.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+  background-color: #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  box-sizing: border-box;
+}
+
+.optionItem:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+}
+
+.optionItem.selected {
+  background-color: #f0fdf4;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15);
+  border-color: #10b981;
+}
+
+.optionItem.voted {
+  cursor: default;
+}
+
+.optionItem.voted:hover {
+  transform: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+/* --- 옵션 콘텐츠 --- */
+.optionContent {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.optionInfo {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.optionName {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #111827;
+  flex: 1;
+}
+
+.optionStats {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.percentage {
+  font-weight: 700;
+  color: #111827;
+}
+
+.voteCount {
+  color: #6b7280;
+}
+
+/* --- 진행률 바 --- */
+.progressBarContainer {
+  width: 100%;
+  height: 8px;
+  background-color: #f3f4f6;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progressBar {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.3s ease;
+  min-width: 8px;
+}
+
+/* --- 관리 섹션 --- */
+.manageSection {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 2rem;
+}
+
+/* --- 투표 섹션 --- */
+.voteSection {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 2rem;
+}
+
+.voteButton {
+  background-color: #10b981;
+  border: none;
+  border-radius: 8px;
+  padding: 1.5rem 3rem;
+  color: white;
+  font-weight: 700;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 100%;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+}
+
+.voteButton:hover:not(.disabled) {
+  background-color: #059669;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+}
+
+.voteButton.disabled {
+  background-color: #d1d5db;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* --- 투표 완료 메시지 --- */
+.votedMessage {
+  text-align: center;
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  background-color: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 8px;
+  color: #059669;
+  font-weight: 600;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.votedMessage:hover {
+  background-color: #fef2f2;
+  border-color: #fca5a5;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.15);
+}
+
+.votedText {
+  color: #059669;
+}
+
+.cancelText {
+  color: #dc2626;
+  font-weight: 700;
+}
+
+.cancellingText {
+  color: #6b7280;
+  font-size: 0.9rem;
+  margin-top: 0.5rem;
+  display: block;
+}
+
+/* --- 마감 메시지 --- */
+.closedMessage {
+  text-align: center;
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  background-color: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  color: #dc2626;
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+/* --- 총 투표 수 --- */
+.totalVotes {
+  text-align: left;
+  padding: 2rem;
+  background-color: #f8fafc;
+  border-radius: 8px;
+  border: 2px solid #e2e8f0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.totalVotesLabel {
+  color: #9ca3af;
+  font-size: 0.9rem;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+  display: block;
+}
+
+.totalVotesCount {
+  font-weight: 700;
+  color: #374151;
+  font-size: 1.8rem;
+}
+
+/* --- 공유 섹션 --- */
+.shareSection {
+  margin: 2rem 0;
+  padding-top: 2rem;
+  border-top: 1px solid #e5e7eb;
+}
+
+.shareTitle {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #111827;
+  margin: 0 0 1rem 0;
+}
+
+.shareButtons {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.shareButton {
+  background-color: #f3f4f6;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  padding: 0.75rem 1rem;
+  color: #374151;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.9rem;
+}
+
+.shareButton:hover {
+  background-color: #e5e7eb;
+  border-color: #9ca3af;
+}
+
+/* --- 신고 섹션 --- */
+.reportSection {
+  margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e5e7eb;
+  text-align: center;
+}
+
+.reportButton {
+  background: none;
+  border: none;
+  color: #9ca3af;
+  font-size: 0.85rem;
+  cursor: pointer;
+  text-decoration: underline;
+  transition: color 0.2s;
+}
+
+.reportButton:hover {
+  color: #6b7280;
+}
+
+/* --- 로딩 상태 --- */
+.loadingContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 0;
+  gap: 1rem;
+}
+
+.loadingSpinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid #f3f4f6;
+  border-top: 3px solid #006D94;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* --- 에러 상태 --- */
+.errorContainer {
+  text-align: center;
+  padding: 2rem;
+  background-color: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  margin: 2rem 0;
+}
+
+.errorMessage {
+  color: #dc2626;
+  margin: 0 0 1rem 0;
+  font-size: 1rem;
+}
+
+/* --- 반응형 디자인 --- */
+@media (max-width: 768px) {
+  .container {
+    padding: 1rem 5% 1rem;
+  }
+  
+  .contentWrapper {
+    flex-direction: column;
+    gap: 2rem;
+  }
+  
+  .leftSection,
+  .rightSection {
+    flex: none;
+    width: 100%;
+  }
+  
+  .rightSection {
+    position: static;
+  }
+  
+  .pollTitle {
+    font-size: 2rem;
+  }
+  
+  .optionItem {
+    padding: 1rem;
+  }
+  
+  .optionInfo {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  
+  .voteButton {
+    padding: 1.25rem 2rem;
+    font-size: 1.1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 0.5rem 3% 0.5rem;
+  }
+  
+  .pollTitle {
+    font-size: 1.75rem;
+  }
+  
+  .creatorInfo {
+    font-size: 1rem;
+  }
+  
+  .voteButton {
+    padding: 1rem 1.5rem;
+    font-size: 1rem;
+  }
+  
+  .totalVotes {
+    padding: 1.5rem;
+  }
+  
+  .totalVotesCount {
+    font-size: 1.4rem;
+  }
+} 
