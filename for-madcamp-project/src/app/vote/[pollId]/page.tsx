@@ -352,7 +352,7 @@ const PollDetailPage = () => {
             )}
 
             {/* 투표 완료 상태 */}
-            {poll.hasVoted && (
+            {poll.hasVoted && !isPollClosed() && (
               <div 
                 className={styles.votedMessage}
                 onMouseEnter={() => setShowCancelConfirm(true)}

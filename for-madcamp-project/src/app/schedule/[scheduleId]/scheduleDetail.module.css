@@ -1,0 +1,401 @@
+/* 전체 컨테이너 */
+.container {
+  background-color: #ffffff;
+  padding: 4rem 20% 2rem;
+  min-height: 100vh;
+}
+
+/* --- 헤더 --- */
+.header {
+  margin-bottom: 2rem;
+}
+
+.backButton {
+  background: none;
+  border: none;
+  color: #006D94;
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 0.5rem 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: color 0.2s;
+}
+
+.backButton:hover {
+  color: #005c7a;
+}
+
+/* --- 제목 섹션 --- */
+.titleSection {
+  margin-bottom: 3rem;
+}
+
+.pageTitle {
+  font-size: 2.5rem;
+  font-weight: 600;
+  color: #111827;
+  margin: 0 0 0.5rem 0;
+}
+
+.pageDescription {
+  font-size: 1.1rem;
+  color: #6b7280;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* --- 메인 콘텐츠 --- */
+.main {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.contentWrapper {
+  display: flex;
+  gap: 3rem;
+}
+
+/* --- 왼쪽 섹션 (70%) --- */
+.leftSection {
+  flex: 0 0 70%;
+}
+
+.formSection {
+  margin-bottom: 2rem;
+}
+
+.label {
+  display: block;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 0.5rem;
+}
+
+.titleInput {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 1rem;
+  color: #111827;
+  background: #ffffff;
+  transition: border-color 0.2s;
+}
+
+.titleInput:focus {
+  outline: none;
+  border-color: #006D94;
+}
+
+.titleInput:disabled {
+  background: #f9fafb;
+  color: #6b7280;
+  cursor: not-allowed;
+}
+
+.titleInput::placeholder {
+  color: #9ca3af;
+}
+
+.descriptionInput {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 1rem;
+  color: #111827;
+  background: #ffffff;
+  resize: vertical;
+  min-height: 120px;
+  font-family: inherit;
+  transition: border-color 0.2s;
+}
+
+.descriptionInput:focus {
+  outline: none;
+  border-color: #006D94;
+}
+
+.descriptionInput:disabled {
+  background: #f9fafb;
+  color: #6b7280;
+  cursor: not-allowed;
+}
+
+.descriptionInput::placeholder {
+  color: #9ca3af;
+}
+
+/* --- 시간 설정 --- */
+.timeContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.timeGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.timeLabel {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #6b7280;
+}
+
+.timeInputs {
+  display: flex;
+  gap: 1rem;
+}
+
+.dateInput,
+.timeInput {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 1rem;
+  color: #111827;
+  background: #ffffff;
+  transition: border-color 0.2s;
+}
+
+.dateInput:focus,
+.timeInput:focus {
+  outline: none;
+  border-color: #006D94;
+}
+
+.dateInput:disabled,
+.timeInput:disabled {
+  background: #f9fafb;
+  color: #6b7280;
+  cursor: not-allowed;
+}
+
+/* --- 오른쪽 섹션 (30%) --- */
+.rightSection {
+  flex: 0 0 30%;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.participantsSection {
+  background: #f9fafb;
+  border-radius: 12px;
+  padding: 1.5rem;
+}
+
+.participantsList {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.participantItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem;
+  background: #ffffff;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+}
+
+.participantInfo {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 1;
+}
+
+.participantAvatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.participantName {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #111827;
+}
+
+.participantRole {
+  font-size: 0.8rem;
+  color: #006D94;
+  font-weight: 500;
+  background: #e0f2fe;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+}
+
+/* --- 액션 섹션 --- */
+.actionSection {
+  margin-top: auto;
+}
+
+.editButton {
+  width: 100%;
+  background: #006D94;
+  border: none;
+  border-radius: 8px;
+  padding: 1rem 1.5rem;
+  color: white;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.2s;
+  box-shadow: 0 2px 4px rgba(0, 109, 148, 0.1);
+}
+
+.editButton:hover {
+  background: #005c7a;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 109, 148, 0.2);
+}
+
+.editActions {
+  display: flex;
+  gap: 1rem;
+}
+
+.cancelButton {
+  flex: 1;
+  background: #ffffff;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  padding: 1rem 1.5rem;
+  color: #374151;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.cancelButton:hover {
+  border-color: #9ca3af;
+  background: #f9fafb;
+}
+
+.saveButton {
+  flex: 1;
+  background: #006D94;
+  border: none;
+  border-radius: 8px;
+  padding: 1rem 1.5rem;
+  color: white;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.2s;
+  box-shadow: 0 2px 4px rgba(0, 109, 148, 0.1);
+}
+
+.saveButton:hover:not(.disabled) {
+  background: #005c7a;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 109, 148, 0.2);
+}
+
+.saveButton.disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* --- 로딩 상태 --- */
+.loadingContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 400px;
+  gap: 1rem;
+}
+
+.loadingSpinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #e5e7eb;
+  border-top: 4px solid #006D94;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* --- 에러 메시지 --- */
+.errorContainer {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-top: 2rem;
+  text-align: center;
+}
+
+.errorMessage {
+  color: #dc2626;
+  margin: 0 0 1rem 0;
+}
+
+/* --- 반응형 디자인 --- */
+@media (max-width: 1024px) {
+  .container {
+    padding: 2rem 5%;
+  }
+  
+  .contentWrapper {
+    flex-direction: column;
+    gap: 2rem;
+  }
+  
+  .leftSection,
+  .rightSection {
+    flex: 1;
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 1rem;
+  }
+  
+  .pageTitle {
+    font-size: 2rem;
+  }
+  
+  .timeInputs {
+    flex-direction: column;
+  }
+  
+  .editActions {
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 480px) {
+  .pageTitle {
+    font-size: 1.75rem;
+  }
+  
+  .pageDescription {
+    font-size: 1rem;
+  }
+} 

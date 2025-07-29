@@ -69,6 +69,7 @@ export async function GET(req, { params }) {
         schedule_id,
         schedule_name,
         when,
+        until,
         description,
         created_at,
         related_poll
@@ -115,6 +116,7 @@ export async function GET(req, { params }) {
           scheduleId: schedule.schedule_id,
           scheduleName: schedule.schedule_name,
           when: schedule.when,
+          until: schedule.until,
           participantCount: participantCount || 0,
           myStatus: myStatus
         };

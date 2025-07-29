@@ -37,6 +37,7 @@ export async function GET(req, { params }) {
         schedule_id,
         schedule_name,
         when,
+        until,
         description,
         created_at,
         related_poll,
@@ -107,6 +108,7 @@ export async function GET(req, { params }) {
       scheduleId: schedule.schedule_id,
       scheduleName: schedule.schedule_name,
       when: schedule.when,
+      until: schedule.until,
       description: schedule.description,
       createdAt: schedule.created_at,
       relatedPollId: schedule.related_poll,
@@ -154,8 +156,8 @@ export async function PUT(req, { params }) {
     }
 
     // 3. 요청 본문 파싱
-    const { scheduleName, when, description } = await req.json();
-    if (!scheduleName && !when && !description) {
+    const { scheduleName, when, until, description } = await req.json();
+    if (!scheduleName && !when && !until && !description) {
       return NextResponse.json(
         { error: 'Invalid request body.' },
         { status: 400 }
@@ -169,6 +171,7 @@ export async function PUT(req, { params }) {
         schedule_id,
         schedule_name,
         when,
+        until,
         description,
         created_at,
         related_poll,
@@ -224,10 +227,33 @@ export async function PUT(req, { params }) {
       }
     }
 
-    // 8. 일정 정보 업데이트
+    // 8. 종료 시간 검증 (until이 제공된 경우)
+    if (until) {
+      const endDate = new Date(until);
+      if (isNaN(endDate.getTime())) {
+        return NextResponse.json(
+          { error: 'Invalid end date format.' },
+          { status: 400 }
+        );
+      }
+      
+      // when과 until의 시간 관계 검증
+      if (when) {
+        const startDate = new Date(when);
+        if (endDate <= startDate) {
+          return NextResponse.json(
+            { error: 'End time must be after start time.' },
+            { status: 400 }
+          );
+        }
+      }
+    }
+
+    // 9. 일정 정보 업데이트
     const updateData = {};
     if (scheduleName !== undefined) updateData.schedule_name = scheduleName;
     if (when !== undefined) updateData.when = when;
+    if (until !== undefined) updateData.until = until;
     if (description !== undefined) updateData.description = description;
 
     const { data: updatedSchedule, error: updateError } = await supabase
@@ -245,13 +271,14 @@ export async function PUT(req, { params }) {
       );
     }
 
-    // 9. 업데이트된 일정의 상세 정보 조회
+    // 10. 업데이트된 일정의 상세 정보 조회
     const { data: scheduleDetails, error: detailsError } = await supabase
       .from('SCHEDULES')
       .select(`
         schedule_id,
         schedule_name,
         when,
+        until,
         description,
         created_at,
         related_poll
@@ -267,7 +294,7 @@ export async function PUT(req, { params }) {
       );
     }
 
-    // 10. 참여자 목록 조회
+    // 11. 참여자 목록 조회
     const { data: allParticipants, error: participantsQueryError } = await supabase
       .from('SCHEDULE_USERS')
       .select(`
@@ -289,7 +316,7 @@ export async function PUT(req, { params }) {
       );
     }
 
-    // 11. 응답 데이터 구성
+    // 12. 응답 데이터 구성
     const participants = (allParticipants || []).map(participant => ({
       userId: participant.PROFILES.id,
       name: participant.PROFILES.name,
@@ -301,6 +328,7 @@ export async function PUT(req, { params }) {
       scheduleId: scheduleDetails.schedule_id,
       scheduleName: scheduleDetails.schedule_name,
       when: scheduleDetails.when,
+      until: scheduleDetails.until,
       description: scheduleDetails.description,
       createdAt: scheduleDetails.created_at,
       relatedPollId: scheduleDetails.related_poll,

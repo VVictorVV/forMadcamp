@@ -25,6 +25,7 @@ const VotePage = () => {
   const [error, setError] = useState<string | null>(null);
   const [userClassId, setUserClassId] = useState<number | null>(null);
   const [sortBy, setSortBy] = useState<'deadline' | 'latest' | 'creator'>('latest');
+  const [currentTime, setCurrentTime] = useState(new Date());
 
   useEffect(() => {
     if (!user) {
@@ -81,6 +82,15 @@ const VotePage = () => {
     fetchPolls();
   }, [user, router]);
 
+  // 실시간 시간 업데이트 (1초마다)
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, []);
+
   const handleCreatePoll = () => {
     router.push('/vote/create');
   };
@@ -114,10 +124,24 @@ const VotePage = () => {
 
   const getTimeUntilDeadline = (deadline: string | null) => {
     if (!deadline) return Infinity;
-    const now = new Date();
     const deadlineDate = new Date(deadline);
-    if (deadlineDate <= now) return Infinity; // 마감된 투표는 무시
-    return deadlineDate.getTime() - now.getTime();
+    if (deadlineDate <= currentTime) return Infinity; // 마감된 투표는 무시
+    return deadlineDate.getTime() - currentTime.getTime();
+  };
+
+  const formatTimeRemaining = (deadline: string | null) => {
+    if (!deadline) return null;
+    const timeRemaining = getTimeUntilDeadline(deadline);
+    if (timeRemaining === Infinity) return null;
+    
+    const hours = Math.floor(timeRemaining / (1000 * 60 * 60));
+    const minutes = Math.floor((timeRemaining % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((timeRemaining % (1000 * 60)) / 1000);
+    
+    // 24시간이 넘으면 null 반환
+    if (hours >= 24) return null;
+    
+    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
   };
 
   const sortedPolls = useMemo(() => {
@@ -242,9 +266,16 @@ const VotePage = () => {
                     {isPollClosed(poll.deadline) ? (
                       <span className={styles.deadlineClosed}>마감됨</span>
                     ) : (
-                      <span className={styles.deadlineActive}>
-                        마감: {new Date(poll.deadline).toLocaleDateString()}
-                      </span>
+                      <div className={styles.deadlineInfo}>
+                        <span className={styles.deadlineActive}>
+                          마감: {new Date(poll.deadline).toLocaleDateString()}
+                        </span>
+                        {formatTimeRemaining(poll.deadline) && (
+                          <span className={styles.timeRemaining}>
+                            남은 시간 {formatTimeRemaining(poll.deadline)}
+                          </span>
+                        )}
+                      </div>
                     )}
                   </div>
                 )}
