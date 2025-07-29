@@ -22,7 +22,7 @@ export async function POST(req) {
     }
 
     // 2. 요청 본문 파싱
-    const { scheduleName, when, description, participantIds } = await req.json();
+    const { scheduleName, when, until, description, participantIds } = await req.json();
 
     // 3. 필수 필드 유효성 검사
     if (!scheduleName || !when || !description) {
@@ -54,7 +54,26 @@ export async function POST(req) {
       );
     }
 
-    // 6. 유저의 프로필 정보 조회 (class_id 확인)
+    // 6. 종료 시간 검증 (until이 제공된 경우)
+    if (until) {
+      const endDate = new Date(until);
+      if (isNaN(endDate.getTime())) {
+        return NextResponse.json(
+          { error: 'Invalid end date format.' },
+          { status: 400 }
+        );
+      }
+      
+      // when과 until의 시간 관계 검증
+      if (endDate <= scheduleDate) {
+        return NextResponse.json(
+          { error: 'End time must be after start time.' },
+          { status: 400 }
+        );
+      }
+    }
+
+    // 7. 유저의 프로필 정보 조회 (class_id 확인)
     const { data: profile, error: profileError } = await supabase
       .from('PROFILES')
       .select('id, class_id, name')
@@ -73,13 +92,14 @@ export async function POST(req) {
       );
     }
 
-    // 7. 일정 생성 (SCHEDULES 테이블에 삽입)
+    // 8. 일정 생성 (SCHEDULES 테이블에 삽입)
     const { data: newSchedule, error: scheduleInsertError } = await supabase
       .from('SCHEDULES')
       .insert({
         class_id: profile.class_id,
         schedule_name: scheduleName,
         when: when,
+        until: until,
         description: description,
         related_poll: null // API 33에서는 연관된 투표가 없음
       })
@@ -94,7 +114,7 @@ export async function POST(req) {
       );
     }
 
-    // 8. 생성자를 주최자로 등록
+    // 9. 생성자를 주최자로 등록
     const { error: creatorInsertError } = await supabase
       .from('SCHEDULE_USERS')
       .insert({
@@ -112,7 +132,7 @@ export async function POST(req) {
       );
     }
 
-    // 9. 초대된 참여자들을 등록 (있는 경우)
+    // 10. 초대된 참여자들을 등록 (있는 경우)
     if (participantIds && Array.isArray(participantIds) && participantIds.length > 0) {
       // 생성자 자신을 participantIds에서 제외
       const filteredParticipantIds = participantIds.filter(id => id !== profile.id);
@@ -155,13 +175,14 @@ export async function POST(req) {
       }
     }
 
-    // 10. 생성된 일정의 상세 정보 조회 (응답용)
+    // 11. 생성된 일정의 상세 정보 조회 (응답용)
     const { data: scheduleDetails, error: detailsError } = await supabase
       .from('SCHEDULES')
       .select(`
         schedule_id,
         schedule_name,
         when,
+        until,
         description,
         created_at,
         related_poll
@@ -177,7 +198,7 @@ export async function POST(req) {
       );
     }
 
-    // 11. 참여자 목록 조회
+    // 12. 참여자 목록 조회
     const { data: allParticipants, error: participantsQueryError } = await supabase
       .from('SCHEDULE_USERS')
       .select(`
@@ -199,7 +220,7 @@ export async function POST(req) {
       );
     }
 
-    // 12. 응답 데이터 구성
+    // 13. 응답 데이터 구성
     const participants = (allParticipants || []).map(participant => ({
       userId: participant.PROFILES.id,
       name: participant.PROFILES.name,
@@ -211,6 +232,7 @@ export async function POST(req) {
       scheduleId: scheduleDetails.schedule_id,
       scheduleName: scheduleDetails.schedule_name,
       when: scheduleDetails.when,
+      until: scheduleDetails.until,
       description: scheduleDetails.description,
       createdAt: scheduleDetails.created_at,
       relatedPollId: scheduleDetails.related_poll,
