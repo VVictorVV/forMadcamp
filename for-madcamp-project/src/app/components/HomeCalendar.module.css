@@ -1,0 +1,110 @@
+.calendarContainer {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    color: white;
+    cursor: pointer;
+    overflow: hidden;
+    background: rgba(0,0,0,0.1);
+    border-radius: 12px;
+}
+
+.navigation {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    margin-bottom: 1rem;
+}
+
+.navigation button {
+    background: none;
+    border: 1px solid rgba(255,255,255,0.5);
+    color: white;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    cursor: pointer;
+}
+
+.calendarGrid {
+    flex-grow: 1;
+    display: flex;
+    position: relative;
+    overflow-y: auto;
+}
+
+.timeColumnHeader {
+    height: 50px; /* Same height as daysHeader */
+    box-sizing: border-box;
+    border-bottom: 1px solid rgba(255,255,255,0.2);
+}
+
+.timeColumn {
+    width: 60px;
+    flex-shrink: 0;
+    border-right: 1px solid rgba(255,255,255,0.2);
+}
+
+.timeSlot {
+    height: 50px; /* 3 hour slot */
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding-top: 4px;
+    font-size: 0.7rem;
+    color: rgba(255,255,255,0.7);
+}
+
+.scheduleArea {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.daysHeader {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    text-align: center;
+    border-bottom: 1px solid rgba(255,255,255,0.2);
+    flex-shrink: 0;
+    height: 50px; /* Set fixed height */
+    align-items: center; /* Vertically center content */
+}
+
+.dayHeader {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 0.9rem;
+}
+
+.scheduleGrid {
+    flex-grow: 1;
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    position: relative;
+}
+
+.dayColumn {
+    position: relative;
+    border-right: 1px solid rgba(255,255,255,0.1);
+}
+.dayColumn:last-child {
+    border-right: none;
+}
+
+.scheduleBlock {
+    position: absolute;
+    left: 2px;
+    right: 2px;
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    padding: 4px;
+    font-size: 0.75rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    border: 1px solid rgba(255,255,255,0.3);
+} 
