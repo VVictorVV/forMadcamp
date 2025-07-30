@@ -42,41 +42,84 @@ export async function POST(req) {
       );
     }
 
-    // 4. 현재 사용자의 프로필 정보 조회
+    // 4. Get current user's profile and class
     const { data: currentUserProfile, error: profileError } = await supabase
       .from('PROFILES')
       .select('id, class_id, name')
       .eq('id', user.id)
       .single();
 
-    if (profileError || !currentUserProfile) {
-      return NextResponse.json(
-        { error: 'User profile not found.' },
-        { status: 404 }
-      );
+    if (profileError || !currentUserProfile || !currentUserProfile.class_id) {
+      return NextResponse.json({ error: 'User profile or class not found.' }, { status: 404 });
+    }
+    const userClassId = currentUserProfile.class_id;
+
+    // --- New Step: Validate participants are in the same class ---
+    if (Array.isArray(participators) && participators.length > 0) {
+        const participatorIds = participators.map(p => p.profileId);
+        
+        // Also include the creator in the check, if they're not already in the list
+        if (!participatorIds.includes(user.id)) {
+            participatorIds.push(user.id);
+        }
+
+        const { data: profiles, error: profilesError } = await supabase
+            .from('PROFILES')
+            .select('id, class_id')
+            .in('id', participatorIds);
+        
+        if (profilesError) throw profilesError;
+
+        // Check if all fetched profiles match the creator's class_id
+        const allInSameClass = profiles.every(p => p.class_id === userClassId);
+        if (!allInSameClass || profiles.length !== participatorIds.length) {
+            return NextResponse.json({ error: 'All participants must be from the same class.' }, { status: 400 });
+        }
     }
 
-    if (!currentUserProfile.class_id) {
-      return NextResponse.json(
-        { error: 'User is not assigned to any class.' },
-        { status: 400 }
-      );
+    // 5. Check if any of the intended participants are already in a project for the given week.
+    const intendedParticipantIds = (Array.isArray(participators) ? participators.map(p => p.profileId) : []);
+    if (!intendedParticipantIds.includes(user.id)) {
+        intendedParticipantIds.push(user.id);
+    }
+    
+    // Find projects in the same class and week
+    const { data: projectsInSameWeek, error: projectsError } = await supabase
+        .from('PROJECTS')
+        .select('project_id')
+        .eq('class_id', userClassId)
+        .eq('week_num', weekNum);
+
+    if (projectsError) {
+        console.error('Error fetching projects for the week:', projectsError);
+        return NextResponse.json({ error: 'Failed to check existing projects.' }, { status: 500 });
     }
 
-    // 5. 이미 해당 주차에 프로젝트가 있는지 확인
-    const { data: existingProjects, error: existingError } = await supabase
-      .from('PROJECTS')
-      .select('project_id')
-      .eq('class_id', currentUserProfile.class_id)
-      .eq('week_num', weekNum);
+    if (projectsInSameWeek.length > 0) {
+        const projectIds = projectsInSameWeek.map(p => p.project_id);
+        
+        // Check if any of the intended participants are in any of these projects
+        const { data: existingParticipations, error: participationError } = await supabase
+            .from('PARTICIPATOR')
+            .select('profile_id')
+            .in('project_id', projectIds)
+            .in('profile_id', intendedParticipantIds);
+        
+        if (participationError) {
+            console.error('Error checking participations:', participationError);
+            return NextResponse.json({ error: 'Failed to verify participant availability.' }, { status: 500 });
+        }
 
-    if (existingError) {
-      console.error('Existing projects query error:', existingError);
-    } else if (existingProjects && existingProjects.length > 0) {
-      return NextResponse.json(
-        { error: 'A project already exists for this week.' },
-        { status: 409 }
-      );
+        if (existingParticipations.length > 0) {
+            // Find which user is already in a project to give a more specific error
+            const existingProfileId = existingParticipations[0].profile_id;
+            const { data: profile } = await supabase.from('PROFILES').select('name').eq('id', existingProfileId).single();
+            const errorMessage = `${profile?.name || 'A user'} is already in a project for week ${weekNum}.`;
+            return NextResponse.json(
+                { error: errorMessage },
+                { status: 409 }
+            );
+        }
     }
 
     // 6. 새 프로젝트 생성

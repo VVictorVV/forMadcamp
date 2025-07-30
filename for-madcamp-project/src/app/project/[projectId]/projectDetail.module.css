@@ -19,7 +19,7 @@
   margin-left: auto;  /* Center the banner */
   margin-right: auto; /* Center the banner */
   margin-bottom: 2rem;
-  width: 90%; /* Reduce the width to make it smaller */
+  width: 80%; /* Further reduced the width */
   height: auto; /* Height will be determined by aspect-ratio */
   aspect-ratio: 16 / 9; /* The magic property for 16:9 ratio */
   border-radius: 16px; /* Rounded corners for the whole frame */
@@ -30,11 +30,20 @@
 /* This is no longer an overlay, but a specific corner element */
 .cornerElement {
   position: absolute;
-  top: 58;
+  top: 57.5;
   left: 0; /* Changed from right: 0 */
   width: 20px;  /* Changed size */
   height: 20px; /* Changed size */
   z-index: 2;
+}
+
+.cornerElementTopLeft {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 40px;
+  height: 40px;
+  z-index: 3;
 }
 
 .cornerElementTopRight {
@@ -90,13 +99,9 @@
   height: 100%;
   background-size: cover;
   background-position: center;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #a0aec0;
-  font-size: 1.25rem;
+  border-radius: inherit; /* 부모의 둥근 모서리를 따름 */
   cursor: pointer;
-  z-index: 1; /* Behind everything */
+  position: relative;
 }
 
 .defaultBanner span {
@@ -135,25 +140,47 @@
 }
 
 .sidebar {
-    border-left: 1px solid #e2e8f0;
-    padding-left: 2rem;
-    position: relative;
+  width: 280px;
+  flex-shrink: 0;
 }
 
-.sidebar h3 {
-  font-size: 1.25rem;
-  font-weight: 700; /* Bold */
-  margin-top: 1.5rem;
-  margin-bottom: 1.5rem; /* Restored margin */
-  color: #2d3748;
-  padding-top: 2.5rem; /* Add padding to make space for the button */
+.sidebarActions {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+  align-items: center;
+}
+
+.editButton, .saveButton {
+  padding: 0.6rem 1.2rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.1s;
+  font-family: inherit;
+}
+
+.editButton:active, .saveButton:active {
+    transform: scale(0.98);
+}
+
+.editButton, .saveButton {
+    background-color: #006D94;
+    color: white;
+}
+
+.editButton:hover, .saveButton:hover {
+    background-color: #005c7e;
 }
 
 .participantsList {
+  margin-top: 1rem;
   display: flex;
-  flex-direction: row; /* 가로 정렬 */
-  flex-wrap: wrap; /* 멤버가 많으면 다음 줄로 */
-  gap: 1.5rem; /* 멤버 간 간격 */
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 0.75rem;
 }
 
 .participantCard {
@@ -185,30 +212,6 @@
   text-align: center;
   word-break: keep-all;
   color: #4a5568; /* Softer name color */
-}
-
-/* Edit Mode Styles */
-.editButton, .saveButton {
-  position: absolute; /* Position relative to sidebar */
-  top: 0;
-  left: 2rem; /* Changed from right: 0 and aligned with padding */
-  background-color: #006D94; /* Primary color */
-  color: white;
-  border: none;
-  padding: 0.4rem 0.8rem;
-  border-radius: 0.5rem;
-  cursor: pointer;
-  font-weight: 600;
-  transition: background-color 0.2s;
-}
-
-.editButton:hover, .saveButton:hover {
-    background-color: #005c7a; /* Darker shade for hover */
-}
-
-
-.saveButton:hover {
-  background-color: #005c7a;
 }
 
 .textarea {
@@ -244,4 +247,101 @@
 }
 .uploadButton:hover {
     background-color: rgba(0,0,0,0.7);
+}
+
+/* --- Member Editing Styles --- */
+.participantEditCard {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background-color: #f8f9fa;
+    padding: 0.5rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
+}
+
+.participantEditCard img {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.participantEditCard span {
+    flex-grow: 1;
+}
+
+.participantEditCard button {
+    background: #e2e8f0;
+    border: none;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 1.1rem;
+    color: #4a5568;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    transition: background-color 0.2s;
+}
+
+.participantEditCard button:hover {
+    background: #cbd5e0;
+}
+
+.addParticipantForm {
+    margin-top: 1.5rem;
+    position: relative; /* For positioning the dropdown list */
+}
+
+.addMemberInput {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-family: inherit;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.addMemberInput:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.2);
+}
+
+.addMemberList {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 10;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.addMemberItem {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.addMemberItem:hover {
+    background-color: #f1f3f5;
+}
+
+.addMemberItem img {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    object-fit: cover;
 } 

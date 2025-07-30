@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '../../../../../lib/supabaseClient';
 
-export async function POST(req, { params }) {
+export async function POST(req, context) {
   try {
     // 1. JWT 토큰 추출 및 검증
     const authHeader = req.headers.get('authorization');
@@ -24,7 +24,7 @@ export async function POST(req, { params }) {
     }
 
     const userId = user.id;
-    const { topicId } = params;
+    const topicId = context.params.topicId;
     console.log(`Expressing interest for topicId: ${topicId} by userId: ${userId}`);
 
     // 2. topicId 유효성 검사
@@ -163,5 +163,117 @@ export async function POST(req, { params }) {
       { error: 'Internal server error.' },
       { status: 500 }
     );
+  }
+}
+
+export async function PUT(req, { params }) {
+  try {
+    const authHeader = req.headers.get('authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return NextResponse.json({ error: 'Authentication required.' }, { status: 401 });
+    }
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    if (authError || !user) {
+      return NextResponse.json({ error: 'Authentication required.' }, { status: 401 });
+    }
+
+    const userId = user.id;
+    const topicId = params.topicId;
+    const { level } = await req.json();
+
+    if (!topicId || isNaN(parseInt(topicId))) {
+      return NextResponse.json({ error: 'Invalid topic ID.' }, { status: 400 });
+    }
+    if (level === undefined || !Number.isInteger(level) || level < 0 || level > 5) {
+      return NextResponse.json({ error: 'Interest level must be between 0 and 5.' }, { status: 400 });
+    }
+
+    if (level === 0) {
+      // 0이면 삭제와 동일하게 처리
+      const { error: deleteError } = await supabase
+        .from('TOPIC_INTERESTS')
+        .delete()
+        .eq('profile_id', userId)
+        .eq('topic_id', topicId);
+
+      if (deleteError) {
+        console.error('Error deleting interest:', deleteError);
+        return NextResponse.json({ error: 'Internal server error.' }, { status: 500 });
+      }
+      return NextResponse.json({ message: 'Interest removed.' }, { status: 200 });
+
+    } else {
+      // 1-5 사이 값이면 수정
+      const { data, error: updateError } = await supabase
+        .from('TOPIC_INTERESTS')
+        .update({ level: level, expressed_at: new Date().toISOString() })
+        .eq('profile_id', userId)
+        .eq('topic_id', topicId)
+        .select()
+        .single();
+        
+      if (updateError) {
+        if (updateError.code === 'PGRST116') { // No rows found
+             // 데이터가 없으면 새로 생성 (Upsert)
+            const { data: insertData, error: insertError } = await supabase
+                .from('TOPIC_INTERESTS')
+                .insert({ profile_id: userId, topic_id: topicId, level: level })
+                .select()
+                .single();
+
+            if (insertError) {
+                console.error('Error inserting interest on PUT:', insertError);
+                return NextResponse.json({ error: 'Failed to create interest.' }, { status: 500 });
+            }
+            return NextResponse.json(insertData, { status: 201 });
+        }
+        console.error('Error updating interest:', updateError);
+        return NextResponse.json({ error: 'Failed to update interest.' }, { status: 500 });
+      }
+      return NextResponse.json(data, { status: 200 });
+    }
+
+  } catch (err) {
+    console.error('Unexpected server error during interest update:', err);
+    return NextResponse.json({ error: 'Internal server error.' }, { status: 500 });
+  }
+}
+
+export async function DELETE(req, context) {
+  try {
+    const authHeader = req.headers.get('authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return NextResponse.json({ error: 'Authentication required.' }, { status: 401 });
+    }
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    if (authError || !user) {
+      return NextResponse.json({ error: 'Authentication required.' }, { status: 401 });
+    }
+
+    const userId = user.id;
+    const topicId = context.params.topicId;
+
+    if (!topicId || isNaN(parseInt(topicId))) {
+      return NextResponse.json({ error: 'Invalid topic ID.' }, { status: 400 });
+    }
+
+    const { error } = await supabase
+      .from('TOPIC_INTERESTS')
+      .delete()
+      .eq('profile_id', userId)
+      .eq('topic_id', topicId);
+
+    if (error) {
+      console.error('Error deleting interest:', error);
+      return NextResponse.json({ error: 'Failed to delete interest.' }, { status: 500 });
+    }
+
+    return new Response(null, { status: 204 }); // No Content
+
+  } catch (err) {
+    console.error('Unexpected server error during interest deletion:', err);
+    return NextResponse.json({ error: 'Internal server error.' }, { status: 500 });
   }
 } 

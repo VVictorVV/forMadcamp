@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback, ChangeEvent, useRef, useLayoutEffect } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { supabase } from '../../../../lib/supabaseClient';
 import styles from './projectDetail.module.css';
 import { type User } from '@supabase/supabase-js';
@@ -14,10 +14,12 @@ import ScoopedCorner from '../../../components/ScoopedCorner';
 // 데이터 구조 정의
 interface Project {
   project_id: number;
-  project_name: string;
+  project_name: string | null;
+  week_num: number;
   planning: string | null;
   description: string | null;
   representative_image_uri: string | null;
+  class_id: number | null;
 }
 
 interface ParticipantProfile {
@@ -27,8 +29,15 @@ interface ParticipantProfile {
   role: string | null;
 }
 
+interface AllProfiles {
+    id: string;
+    name: string | null;
+    profile_image_uri: string | null;
+}
+
 const ProjectDetailPage = () => {
   const params = useParams();
+  const router = useRouter();
   const projectId = params.projectId as string;
 
   // 상태 변수
@@ -40,34 +49,49 @@ const ProjectDetailPage = () => {
   const [isOwner, setIsOwner] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [editedProject, setEditedProject] = useState<Partial<Project>>({});
+  const [editedParticipants, setEditedParticipants] = useState<ParticipantProfile[]>([]);
+  const [availableProfiles, setAvailableProfiles] = useState<AllProfiles[]>([]);
+  const [newParticipantId, setNewParticipantId] = useState<string>('');
   const [newImageFile, setNewImageFile] = useState<File | null>(null);
   const [openLightbox, setOpenLightbox] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [isMemberListOpen, setIsMemberListOpen] = useState(false);
+  const addMemberFormRef = useRef<HTMLDivElement>(null);
 
-  const titleRef = useRef<HTMLDivElement>(null);
-  const [topRightCornerStyle, setTopRightCornerStyle] = useState({});
-
-  useLayoutEffect(() => {
-    const calculatePosition = () => {
-      if (titleRef.current) {
-        const titleWidth = titleRef.current.offsetWidth;
-        setTopRightCornerStyle({ left: `${titleWidth}px` });
-      }
-    };
-
-    calculatePosition();
-    
-    const observer = new ResizeObserver(calculatePosition);
-    if (titleRef.current) {
-      observer.observe(titleRef.current);
+  const [topRightCornerStyle, setTopRightCornerStyle] = useState<{left?: string; opacity: number}>({ opacity: 0 });
+  const observerRef = useRef<ResizeObserver | null>(null);
+  
+  const titleRef = useCallback((node: HTMLDivElement | null) => {
+    // 1. If we have an old observer, disconnect it from the previous node
+    if (observerRef.current) {
+      observerRef.current.disconnect();
     }
-    
-    return () => observer.disconnect();
-  }, [project, isEditMode]); // Recalculate when title text or edit mode changes
+  
+    // 2. If the new node is mounted, create a new observer for it
+    if (node !== null) {
+      const observer = new ResizeObserver(entries => {
+        for (const entry of entries) {
+          const { width } = entry.contentRect;
+          // 3. When the size is known and valid, update the corner's style
+          if (width > 0) {
+            setTopRightCornerStyle({ 
+              left: `${width}px`,
+              opacity: 1 
+            });
+          }
+        }
+      });
+      // 4. Start observing the new node and save the observer instance
+      observer.observe(node);
+      observerRef.current = observer;
+    }
+  }, []); // Empty dependency array means this callback function is created only once
 
   const handleEditToggle = () => {
     if (isEditMode) {
       // Cancel edits
       setEditedProject(project!);
+      setEditedParticipants(participants); // Cancel participant edits
       setNewImageFile(null);
     }
     setIsEditMode(!isEditMode);
@@ -94,18 +118,35 @@ const ProjectDetailPage = () => {
   const handleSave = async () => {
     if (!project) return;
 
-    // A simple check to see if anything has changed
+    // --- Start of Debugging ---
+    const originalIdsForDebug = [...new Set(participants.map(p => p.id))].sort();
+    const editedIdsForDebug = [...new Set(editedParticipants.map(p => p.id))].sort();
+
+    console.log("--- handleSave() called. Checking for changes... ---");
+    console.log("Original Participant IDs:", originalIdsForDebug);
+    console.log("Edited Participant IDs:", editedIdsForDebug);
+    console.log("Are participant lists different?", JSON.stringify(originalIdsForDebug) !== JSON.stringify(editedIdsForDebug));
+    // --- End of Debugging ---
+
     const hasTextChanged = 
         editedProject.project_name !== project.project_name ||
         editedProject.planning !== project.planning ||
         editedProject.description !== project.description;
 
-    if (!newImageFile && !hasTextChanged) {
+    const hasParticipantsChanged = JSON.stringify([...new Set(participants.map(p => p.id))].sort()) !== JSON.stringify([...new Set(editedParticipants.map(p => p.id))].sort());
+
+    if (!newImageFile && !hasTextChanged && !hasParticipantsChanged) {
         setIsEditMode(false);
-        return; // Nothing to save
+        return;
     }
 
     let imageUrl = project.representative_image_uri;
+    
+    // Determine the final project name with clearer logic
+    let finalProjectName = editedProject.project_name;
+    if (!finalProjectName || finalProjectName.trim() === '') {
+        finalProjectName = `Project ${project.week_num}`;
+    }
 
     try {
         const { data: { session } } = await supabase.auth.getSession();
@@ -132,7 +173,7 @@ const ProjectDetailPage = () => {
 
         // 2. Update project details
         const updateData = {
-            project_name: editedProject.project_name,
+            project_name: finalProjectName,
             planning: editedProject.planning,
             description: editedProject.description,
             representative_image_uri: imageUrl,
@@ -152,7 +193,33 @@ const ProjectDetailPage = () => {
             throw new Error(errorData.error || 'Failed to update project.');
         }
 
-        // 3. Refresh data and exit edit mode
+        // --- Sync Participants ---
+        const originalParticipantIds = new Set(participants.map(p => p.id));
+        const editedParticipantIds = new Set(editedParticipants.map(p => p.id));
+        
+        if (JSON.stringify([...originalParticipantIds].sort()) !== JSON.stringify([...editedParticipantIds].sort())) {
+            console.log('Participant list changed. Syncing with server...');
+            console.log('New participant IDs to save:', Array.from(editedParticipantIds));
+
+            const participatorsResponse = await fetch(`/api/projects/${projectId}/participators`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${session.access_token}`
+                },
+                body: JSON.stringify({ newParticipantIds: Array.from(editedParticipantIds) }),
+            });
+
+            console.log('API Response Status:', participatorsResponse.status);
+            const responseData = await participatorsResponse.json();
+            console.log('API Response Body:', responseData);
+
+            if (!participatorsResponse.ok) {
+                throw new Error(responseData.error || 'Failed to update participants.');
+            }
+        }
+        
+        console.log('Save successful, refetching project data...');
         await fetchProjectData();
         setIsEditMode(false);
         setNewImageFile(null);
@@ -161,6 +228,21 @@ const ProjectDetailPage = () => {
         setError(err.message);
         console.error("Save failed:", err);
     }
+  };
+
+  const handleRemoveParticipant = (idToRemove: string) => {
+    if (idToRemove === currentUser?.id) return; // Cannot remove self
+    setEditedParticipants(prev => prev.filter(p => p.id !== idToRemove));
+  };
+  
+  const handleAddParticipant = (profileToAdd: AllProfiles) => {
+    if (editedParticipants.some(p => p.id === profileToAdd.id)) return;
+    setEditedParticipants(prev => [...prev, { 
+        ...profileToAdd, 
+        role: '팀원'
+    }]);
+    setSearchTerm('');
+    setIsMemberListOpen(false);
   };
 
   // 데이터 가져오기 로직
@@ -232,6 +314,21 @@ const ProjectDetailPage = () => {
       }
       console.log('------------------------------------');
 
+      // After fetching participants:
+      setEditedParticipants(fetchedParticipants);
+      
+      // Fetch all profiles from the same class for the add member dropdown
+      if (projectData.class_id) {
+        const { data: allProfilesData, error: allProfilesError } = await supabase
+            .from('PROFILES')
+            .select('id, name, profile_image_uri')
+            .eq('class_id', projectData.class_id) // Filter by project's class
+            .order('name');
+            
+        if (allProfilesError) throw new Error('Failed to load profiles for selection.');
+        setAvailableProfiles(allProfilesData || []);
+      }
+
 
     } catch (err: any) {
       setError(err.message);
@@ -244,6 +341,16 @@ const ProjectDetailPage = () => {
   useEffect(() => {
     fetchProjectData();
   }, [fetchProjectData]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (addMemberFormRef.current && !addMemberFormRef.current.contains(event.target as Node)) {
+        setIsMemberListOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   // This useEffect is no longer needed as the logic is consolidated in fetchProjectData
   /*
@@ -268,6 +375,10 @@ const ProjectDetailPage = () => {
   if (!project) {
     return <div className={styles.pageContainer}><p>프로젝트를 찾을 수 없습니다.</p></div>;
   }
+
+  const unassignedProfiles = availableProfiles
+    .filter(p => !editedParticipants.some(ep => ep.id === p.id))
+    .filter(p => p.name?.toLowerCase().includes(searchTerm.toLowerCase()));
 
   return (
     <div className={styles.pageContainer}>
@@ -311,6 +422,13 @@ const ProjectDetailPage = () => {
                     // corner prop is removed to use default 'bottom-right'
                 />
             </div>
+            <div className={styles.cornerElementTopLeft}>
+                <ScoopedCorner 
+                    size={60} 
+                    color="#FFFFFF" // Explicitly set to opaque white
+                    // corner prop is removed to use default 'bottom-right'
+                />
+            </div>
             {/* Add another corner element */}
             <div className={styles.cornerElementTopRight} style={topRightCornerStyle}>
                 <ScoopedCorner 
@@ -319,7 +437,11 @@ const ProjectDetailPage = () => {
                     // corner prop is removed to use default 'bottom-right'
                 />
             </div>
-            <div className={styles.titleHeader} ref={titleRef}>
+            <div 
+                className={styles.titleHeader} 
+                ref={titleRef}
+                key={isEditMode ? 'edit' : (project?.project_name || `Project ${project?.week_num}`)} // Force re-mount on change
+            >
                 {isEditMode ? (
                     <input
                         type="text"
@@ -331,7 +453,7 @@ const ProjectDetailPage = () => {
                     />
                 ) : (
                     <div className={styles.titleText}>
-                        {project.project_name}
+                        {project.project_name || `Project ${project.week_num}`}
                     </div>
                 )}
             </div>
@@ -374,16 +496,56 @@ const ProjectDetailPage = () => {
                 </div>
             </div>
             <aside className={styles.sidebar}>
-                {isOwner && (
-                    <button 
-                        onClick={isEditMode ? handleSave : handleEditToggle}
-                        className={isEditMode ? styles.saveButton : styles.editButton}
-                    >
-                        {isEditMode ? 'Save' : 'Edit'}
-                    </button>
-                )}
+                <div className={styles.sidebarActions}>
+                    {isOwner && (
+                        <button 
+                            onClick={isEditMode ? handleSave : handleEditToggle}
+                            className={isEditMode ? styles.saveButton : styles.editButton}
+                        >
+                            {isEditMode ? 'Save' : 'Edit'}
+                        </button>
+                    )}
+                </div>
                 <h3>프로젝트 멤버</h3>
-                {participants.length > 0 ? (
+                {isEditMode ? (
+                    <>
+                        <div className={styles.participantsList}>
+                            {editedParticipants.map(p => (
+                                <div key={p.id} className={styles.participantEditCard}>
+                                    <img src={p.profile_image_uri || '/default_person.svg'} alt={p.name || ''} />
+                                    <span>{p.name}</span>
+                                    {p.id !== currentUser?.id && (
+                                        <button onClick={() => handleRemoveParticipant(p.id)}>&times;</button>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                        <div className={styles.addParticipantForm} ref={addMemberFormRef}>
+                            <input
+                                type="text"
+                                className={styles.addMemberInput}
+                                placeholder="멤버 검색..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                onFocus={() => setIsMemberListOpen(true)}
+                            />
+                            {isMemberListOpen && unassignedProfiles.length > 0 && (
+                                <div className={styles.addMemberList}>
+                                    {unassignedProfiles.map(p => (
+                                        <div 
+                                            key={p.id} 
+                                            className={styles.addMemberItem}
+                                            onClick={() => handleAddParticipant(p)}
+                                        >
+                                            <img src={p.profile_image_uri || '/default_person.svg'} alt={p.name || ''} />
+                                            <span>{p.name}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    </>
+                ) : (
                     <div className={styles.participantsList}>
                         {participants.map(p => (
                             <Link key={p.id} href={`/browse/${p.id}`} className={styles.participantCard}>
@@ -396,8 +558,6 @@ const ProjectDetailPage = () => {
                             </Link>
                         ))}
                     </div>
-                ) : (
-                    <p>참여 멤버 정보 없음</p>
                 )}
             </aside>
         </div>

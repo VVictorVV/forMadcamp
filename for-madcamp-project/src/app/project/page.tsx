@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, FormEvent } from 'react';
+import { useState, useEffect, FormEvent, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation'; // useRouter 임포트
 import styles from './project.module.css';
@@ -23,6 +23,8 @@ interface Profile {
   id: string;
   name: string;
   class_id: number;
+  profile_image_uri: string | null;
+  isParticipating?: boolean; // Add this to track participation status
 }
 
 const ProjectPage = () => {
@@ -75,40 +77,65 @@ const ProjectPage = () => {
     }
   };
 
-  const fetchClassmates = async () => {
-    if (!user) return;
+  // fetchClassmates is now dependent on the selected week
+  const fetchClassmates = useCallback(async (weekNum: number) => {
+    if (!user || weekNum === 0) {
+        setClassmates([]);
+        return;
+    }
     try {
-      // 1. 현재 유저의 프로필(class_id) 조회
-      const { data: currentUserProfile, error: profileError } = await supabase
-        .from('PROFILES')
-        .select('class_id')
-        .eq('id', user.id)
-        .single();
+      // 1. Get current user's class_id
+      const { data: currentUserProfile, error: profileError } = await supabase.from('PROFILES').select('class_id').eq('id', user.id).single();
       if (profileError || !currentUserProfile) throw profileError || new Error("User profile not found");
+      const userClassId = currentUserProfile.class_id;
 
-      // 2. 같은 class_id를 가진 모든 프로필 조회
-      const { data: classmatesData, error: classmatesError } = await supabase
-        .from('PROFILES')
-        .select('id, name, class_id') // class_id도 함께 조회
-        .eq('class_id', currentUserProfile.class_id);
+      // 2. Get all classmates in the same class
+      const { data: classmatesData, error: classmatesError } = await supabase.from('PROFILES').select('id, name, class_id, profile_image_uri').eq('class_id', userClassId).not('id', 'eq', user.id);
       if (classmatesError) throw classmatesError;
+      if (!classmatesData) {
+        setClassmates([]);
+        return;
+      }
+      
+      // 3. Find all users already in a project for the selected week
+      const { data: projectsInWeek, error: projectsError } = await supabase.from('PROJECTS').select('project_id').eq('week_num', weekNum);
+      if (projectsError) throw projectsError;
+      
+      let usersToExclude: string[] = [];
+      if (projectsInWeek && projectsInWeek.length > 0) {
+          const projectIdsInWeek = projectsInWeek.map(p => p.project_id);
+          const { data: participantsInWeek, error: participantsError } = await supabase.from('PARTICIPATOR').select('profile_id').in('project_id', projectIdsInWeek);
+          if (participantsError) throw participantsError;
+          usersToExclude = participantsInWeek.map(p => p.profile_id);
+      }
+      
+      // 4. Mark each classmate as participating or not
+      const updatedClassmates = classmatesData.map(classmate => ({
+        ...classmate,
+        isParticipating: usersToExclude.includes(classmate.id)
+      }));
 
-      // 자기 자신은 목록에서 제외
-      setClassmates(classmatesData?.filter(p => p.id !== user.id) || []);
+      // 5. Sort the final list by name
+      updatedClassmates.sort((a, b) => (a.name || '').localeCompare(b.name || '', 'ko'));
+      setClassmates(updatedClassmates);
 
     } catch (error) {
       console.error('Error fetching classmates:', error);
       alert('참여자 목록을 불러오는 데 실패했습니다.');
     }
-  };
+  }, [user]);
   
-  const openCreateModal = async () => {
+  // When the selected week changes, re-fetch the list of available classmates
+  useEffect(() => {
+    fetchClassmates(newProjectWeek);
+  }, [newProjectWeek, fetchClassmates]);
+
+  const openCreateModal = () => { // Removed async
     const existingWeeks = projects.map(p => p.week_num);
-    const availableWeek = weeks.find(w => !existingWeeks.includes(w));
-    setNewProjectWeek(availableWeek || 0);
+    const availableWeek = weeks.find(w => !existingWeeks.includes(w)) || 0;
+    setNewProjectWeek(availableWeek); // This will trigger the useEffect above
     setSelectedParticipators([]);
     setShowModal(true);
-    await fetchClassmates();
   };
 
   const handleParticipatorToggle = (profileId: string) => {
@@ -208,13 +235,19 @@ const ProjectPage = () => {
                 <div className={styles.participatorList}>
                   {classmates.length > 0 ? (
                     classmates.map(p => (
-                      <div key={p.id} className={styles.participatorItem}>
+                      <div key={p.id} className={`${styles.participatorItem} ${p.isParticipating ? styles.disabled : ''}`}>
+                        <img 
+                          src={p.profile_image_uri || '/default_person.svg'} 
+                          alt={p.name}
+                          className={styles.participatorAvatar}
+                        />
                         <span>{p.name}</span>
                         <label className={styles.switch}>
                           <input 
                             type="checkbox" 
                             checked={selectedParticipators.includes(p.id)}
                             onChange={() => handleParticipatorToggle(p.id)}
+                            disabled={p.isParticipating}
                           />
                           <span className={`${styles.slider} ${styles.round}`}></span>
                         </label>
