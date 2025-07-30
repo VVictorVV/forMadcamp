@@ -1,0 +1,244 @@
+.pageWrapper {
+    height: 93.5vh; /* Use fixed viewport height */
+    background: linear-gradient(45deg, #000000, #d9d9d9);
+    background-attachment: fixed;
+    display: flex;
+    align-items: center;
+    justify-content: center; /* Center grid horizontally */
+    box-sizing: border-box;
+    padding: 1rem; /* Adjust padding to give some space */
+}
+
+.mainGrid {
+    width: 95vw;
+    height: 88vh;
+    display: grid;
+    grid-template-columns: 1fr 2.5fr;
+    grid-template-rows: 2fr 1fr; /* Adjusted row ratio for better balance */
+    gap: 1.5rem;
+    padding: 2.5rem;
+    box-sizing: border-box;
+    background: rgba(255, 255, 255, 0.3);
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+    border-radius: 24px;
+    color: white;
+    grid-template-areas:
+        "calendar recent"
+        "votes    likes";
+}
+
+/* --- Columns and wrappers are no longer needed --- */
+
+/* Generic Styles */
+.sectionTitle {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: white;
+}
+.emptyMessage {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.9rem;
+}
+
+/* --- Component-specific grid area assignments --- */
+.calendarWrapper {
+    grid-area: calendar;
+    min-height: 0; /* Allow shrinking */
+}
+
+.upcomingVotes {
+    grid-area: votes;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 1.5rem;
+    overflow-y: auto;
+}
+.voteList {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+.voteItem {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    font-size: 0.9rem;
+    color: white;
+}
+.voteDeadline {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+/* --- Right Column Components -> now grid items --- */
+.recentProject {
+    grid-area: recent;
+    position: relative;
+    border-radius: 12px;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.1);
+    display: flex; /* Ensure content fills the area */
+}
+
+.recentProject a {
+    width: 100%;
+    height: 100%;
+    display: flex; /* For overlay positioning */
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.recentProject img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.imageOverlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    padding: 1.5rem;
+    z-index: 2;
+}
+.imageOverlay h3 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.projectNameOverlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: 3; /* Ensure it's above the h3 */
+}
+
+.recentProject a:hover .projectNameOverlay {
+    opacity: 1;
+}
+
+.projectNameOverlay h4 {
+    font-size: 2rem;
+    font-weight: 700;
+    text-align: center;
+    padding: 1rem;
+}
+
+.youMightLike {
+    grid-area: likes;
+    padding: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    min-height: 0; /* Allow shrinking */
+}
+.likeGrid {
+    display: flex;
+    gap: 1rem;
+    flex-grow: 1;
+    min-height: 0;
+    height: 100%;
+}
+.likeItem {
+    flex: 1;
+    border-radius: 12px;
+    overflow: hidden;
+    position: relative;
+    background-color: rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+    transition: flex 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+    background-size: cover;
+    background-position: center;
+    display: flex; /* For placeholder alignment */
+    align-items: center;
+    justify-content: center;
+}
+
+.likeItem:hover {
+    flex: 2.5;
+}
+
+.likeItem .projectInfo {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 0.75rem; /* Adjusted padding */
+    background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 100%);
+    color: white;
+    transform: translateY(100%);
+    transition: transform 0.3s ease, opacity 0.3s ease; /* Added opacity transition */
+    opacity: 0;
+    text-align: center; /* Center text */
+    font-size: 0.9rem; /* Adjusted font size */
+    white-space: nowrap; /* Prevent text wrapping */
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.likeItem:hover .projectInfo {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+.likeItem .noImagePlaceholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    color: white;
+    font-weight: 600;
+}
+
+.likeItem .projectInfo {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 1rem;
+    background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0) 100%);
+    color: white;
+    transform: translateY(100%);
+    transition: transform 0.3s ease;
+    opacity: 0;
+}
+
+.likeItem:hover .projectInfo {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+.noImagePlaceholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0,0,0,0.3);
+    color: white;
+    text-align: center;
+    font-size: 0.9rem;
+}
+.noProjectPlaceholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+} 

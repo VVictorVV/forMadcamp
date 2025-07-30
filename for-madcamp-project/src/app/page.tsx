@@ -1,20 +1,33 @@
-import ScoopedCorner from "../components/ScoopedCorner";
+"use client";
+
+import { useAuth } from "@/context/AuthContext";
+import LoggedOutHome from "./components/LoggedOutHome";
+import LoggedInHome from "./components/LoggedInHome"; 
 
 export default function Home() {
+  const { user, isLoading } = useAuth();
+
+  if (isLoading) {
+    return (
+      <main style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: '100vh',
+        backgroundColor: '#1a202c'
+      }}>
+        <p style={{color: 'white'}}>Loading...</p>
+      </main>
+    )
+  }
+
   return (
-    <main style={{
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      minHeight: '100vh',
-      backgroundColor: '#4a5568' // A dark background to see the white shape
-    }}>
-      <div style={{ width: '300px', height: '300px' }}>
-        <ScoopedCorner 
-          size={300} /* Set radius to be equal to the side of the square */
-          color="#ffffff" 
-        />
-      </div>
-    </main>
+    <>
+      {user ? (
+        <LoggedInHome /> 
+      ) : (
+        <LoggedOutHome />
+      )}
+    </>
   );
 }

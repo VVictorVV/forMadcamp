@@ -1,0 +1,67 @@
+/* General Page Setup */
+.pageWrapper {
+    height: 93.5vh;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+.background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(45deg, #011b4b, #006D94);
+    background-size: cover;
+    background-position: center;
+}
+
+.mainContent {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1;
+}
+
+/* Glassmorphism Card Base Style */
+.card {
+    border-radius: 24px;
+    background: rgba(255, 255, 255, 0.3);
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+    color: white;
+}
+
+.introCard {
+    padding: 3rem;
+    width: 600px;
+    text-align: center;
+}
+
+.cardHeader {
+    margin-bottom: 2rem;
+}
+
+.title {
+    font-size: 3rem;
+    font-weight: 700;
+    margin: 0;
+}
+
+.subtitle {
+    font-size: 1.2rem;
+    font-weight: 400;
+    color: #d1d5db;
+    margin-top: 0.5rem;
+}
+
+.cardBody p {
+    font-size: 1rem;
+    line-height: 1.6;
+    margin-bottom: 1rem;
+    color: #e5e7eb;
+} 
