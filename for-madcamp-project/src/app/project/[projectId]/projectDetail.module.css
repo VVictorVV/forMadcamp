@@ -1,323 +1,247 @@
 .pageContainer {
-    margin: 2rem auto;
-    padding: 0 2rem;
-    max-width: 960px;
-    font-family: 'AstaSans-Regular', sans-serif;
+  padding: 2rem 4rem; /* Add more horizontal padding */
+  max-width: 1400px; /* Wider container */
+  margin: 0 auto;
+  font-family: inherit; /* Inherit from body */
+  color: #333; /* Base text color */
 }
 
 .errorText {
-    color: #e53e3e;
-    text-align: center;
-    font-size: 1.2rem;
+  color: #e53e3e;
+  background-color: #fff5f5;
+  border: 1px solid #fc8181;
+  padding: 1rem;
+  border-radius: 0.5rem;
 }
 
 .bannerArea {
   position: relative;
-  width: 100%;
+  margin-left: auto;  /* Center the banner */
+  margin-right: auto; /* Center the banner */
+  margin-bottom: 2rem;
+  width: 90%; /* Reduce the width to make it smaller */
+  height: auto; /* Height will be determined by aspect-ratio */
+  aspect-ratio: 16 / 9; /* The magic property for 16:9 ratio */
+  border-radius: 16px; /* Rounded corners for the whole frame */
+  overflow: hidden;    /* This is key to contain all elements */
+  background-color: #e9eef3; /* Default background for when there's no image */
 }
 
-.banner {
-  position: relative;
-  width: 100%;
-  aspect-ratio: 16/9;
-  /* 테두리 효과를 위한 안쪽 그림자 */
-  box-shadow: inset 0 0 0 3px black;
-  /* 👇 clip-path가 실제 이미지에 먹히게 만듦 */
-  clip-path: var(--dynamic-clip);
-  -webkit-clip-path: var(--dynamic-clip);
-  overflow: hidden; /* 필수: 잘린 부분 숨기기 */
+/* This is no longer an overlay, but a specific corner element */
+.cornerElement {
+  position: absolute;
+  top: 58;
+  left: 0; /* Changed from right: 0 */
+  width: 20px;  /* Changed size */
+  height: 20px; /* Changed size */
+  z-index: 2;
 }
 
-.bannerImage {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-  }
+.cornerElementTopRight {
+  position: absolute;
+  top: 0;
+  /* left property is now controlled by inline style */
+  width: 20px;
+  height: 20px;
+  z-index: 2;
+}
 
 .titleHeader {
   position: absolute;
   top: 0;
   left: 0;
-  z-index: 10;
-  color: white;
-  padding: 0.75rem 1.5rem;
-  white-space: nowrap;
-  background-color: white;   /* ✅ 탭은 흰색 */
-  border-top-left-radius: 20px;  /* 둥글게 마감 */
-  border-top-right-radius: 20px; /* 필요하면 오른쪽도 둥글게 */
+  background-color: white;
+  z-index: 3;
+  border-bottom-right-radius: 20px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  font-weight: 700;
+  color: #1a202c;
+  max-width: 70%;
+  /* Remove padding from here to apply it to children */
 }
 
-/* 제거: ::after 의사 요소는 더 이상 필요 없습니다. */
+.titleText {
+  padding: 0.5rem 1.5rem;
+  font-size: 1.75rem;
+  white-space: nowrap; /* Prevent wrapping */
+}
 
 .titleInput {
-    font-size: 1.8rem;
-    font-weight: bold;
-    color: white;
-    border: none;
-    background: transparent;
-    padding: 0;
-    outline: none;
-    width: 100%;
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.5); /* 텍스트 가독성 향상 */
-}
-.titleInput[readOnly] {
-    border-bottom: none;
-}
-
-/* 제거: .bannerImage는 더 이상 사용되지 않습니다. */
-
-.defaultBanner {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #a0aec0;
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+  width: 100%;
+  padding: 0.5rem 1.5rem;
+  font-size: 1.75rem;
+  font-weight: 700;
+  border: 1px solid #cbd5e0; /* Add a subtle border for editing */
+  border-radius: 12px; /* Match the visual rounding of the container */
+  outline: none;
+  background-color: #f7fafc;
+  font-family: inherit;
+  box-sizing: border-box; /* Ensures padding is included in the width */
+  -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
 }
 
-/* --- "Project 1" 이미지의 '+' 버튼과 일치시키기 위한 주요 수정 영역 --- */
+.titleInput::placeholder {
+  color: #a0aec0;
+}
+
+.bannerContent {
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #a0aec0;
+  font-size: 1.25rem;
+  cursor: pointer;
+  z-index: 1; /* Behind everything */
+}
+
+.defaultBanner span {
+  background-color: rgba(255, 255, 255, 0.8);
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+}
+
+.contentBody {
+  display: grid;
+  grid-template-columns: 1fr 300px; /* Fixed sidebar width */
+  gap: 3rem; /* Increased gap */
+  margin-top: 2rem; /* Add margin-top */
+}
+
+.contentSection {
+  margin-bottom: 3rem; /* Spacing between sections */
+}
+
+.contentSection:last-child {
+  margin-bottom: 0; /* Remove margin from the last section */
+}
+
+.mainContent h2 {
+  font-size: 1.75rem; /* Larger section titles */
+  font-weight: 700; /* Bold */
+  border-bottom: 2px solid #e2e8f0;
+  padding-bottom: 0.75rem;
+  margin-bottom: 1.5rem;
+  color: #2d3748;
+}
+
+.markdownContent {
+  line-height: 1.8; /* More readable line-height */
+  font-size: 1.1rem; /* Slightly larger text */
+}
+
+.sidebar {
+    border-left: 1px solid #e2e8f0;
+    padding-left: 2rem;
+    position: relative;
+}
+
+.sidebar h3 {
+  font-size: 1.25rem;
+  font-weight: 700; /* Bold */
+  margin-top: 1.5rem;
+  margin-bottom: 1.5rem; /* Restored margin */
+  color: #2d3748;
+  padding-top: 2.5rem; /* Add padding to make space for the button */
+}
+
+.participantsList {
+  display: flex;
+  flex-direction: row; /* 가로 정렬 */
+  flex-wrap: wrap; /* 멤버가 많으면 다음 줄로 */
+  gap: 1.5rem; /* 멤버 간 간격 */
+}
+
+.participantCard {
+  display: flex;
+  flex-direction: column; /* 아바타와 이름을 세로로 */
+  align-items: center;   /* 가운데 정렬 */
+  gap: 0.5rem;          /* 아바타와 이름 사이 간격 */
+  text-decoration: none;
+  color: inherit;
+  font-family: inherit; /* 부모 글꼴 상속 */
+  width: 70px; /* 카드 너비 고정 */
+}
+
+.participantCard:hover {
+  background-color: transparent; /* 호버 효과 제거 또는 수정 */
+}
+
+.participantAvatar {
+  width: 50px;   /* 아바타 크기 조정 */
+  height: 50px;
+  border-radius: 50%;
+  background-color: #cbd5e0;
+  object-fit: cover;
+}
+
+.participantName {
+  font-weight: 500; /* Medium */
+  font-size: 0.9rem;
+  text-align: center;
+  word-break: keep-all;
+  color: #4a5568; /* Softer name color */
+}
+
+/* Edit Mode Styles */
+.editButton, .saveButton {
+  position: absolute; /* Position relative to sidebar */
+  top: 0;
+  left: 2rem; /* Changed from right: 0 and aligned with padding */
+  background-color: #006D94; /* Primary color */
+  color: white;
+  border: none;
+  padding: 0.4rem 0.8rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background-color 0.2s;
+}
+
+.editButton:hover, .saveButton:hover {
+    background-color: #005c7a; /* Darker shade for hover */
+}
+
+
+.saveButton:hover {
+  background-color: #005c7a;
+}
+
+.textarea {
+  width: 100%;
+  min-height: 200px; /* Taller textarea */
+  padding: 1rem;
+  font-size: 1.1rem;
+  font-weight: 400; /* Regular */
+  border: 2px solid #e2e8f0;
+  border-radius: 0.75rem;
+  line-height: 1.8;
+  resize: vertical;
+  background-color: #f7fafc; /* Light background for textarea */
+  font-family: inherit; /* Ensure it inherits AstaSans */
+}
+.textarea:focus {
+  border-color: #4299e1;
+  outline: none;
+}
+
 .uploadButton {
-    position: absolute;
-    top: 12px;
-    right: 12px;
-    width: 32px;
-    height: 32px;
-    background-color: rgba(0, 0, 0, 0.6);
+    background-color: rgba(0,0,0,0.5);
     color: white;
+    width: 60px;
+    height: 60px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 20px;
-    font-weight: 500;
+    font-size: 3rem;
     cursor: pointer;
-    border: 2px solid white;
-    transition: background-color 0.2s, transform 0.2s;
-    z-index: 3;
+    transition: background-color 0.2s;
 }
-
 .uploadButton:hover {
-    background-color: rgba(0, 0, 0, 0.8);
-    transform: scale(1.1);
-}
-/* --- 수정 완료 --- */
-
-.content {
-    padding: 0 1rem;
-}
-
-.mainControls {
-    display: flex;
-    justify-content: flex-end;
-    margin-bottom: 1rem;
-}
-
-.sectionTitle {
-    font-size: 1.5rem;
-    font-weight: 600;
-    color: #374151;
-    margin-top: 2rem;
-    margin-bottom: 1rem;
-    border-bottom: 1px solid #e2e8f0;
-    padding-bottom: 0.5rem;
-}
-
-.textarea {
-    width: 100%;
-    min-height: 120px;
-    padding: 0.75rem;
-    border: 1px solid transparent;
-    border-radius: 5px;
-    font-size: 1rem;
-    line-height: 1.6;
-    resize: vertical;
-    background-color: #f8f9fa;
-    font-family: inherit;
-}
-
-.markdownEditorContainer {
-    display: flex;
-    gap: 1rem;
-}
-
-.markdownEditor {
-    width: 50%;
-    min-height: 300px;
-}
-
-.markdownPreview {
-    width: 50%;
-    min-height: 300px;
-    background-color: #f9f9f9;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    padding: 0.75rem;
-    line-height: 1.7;
-}
-
-.editButton {
-    padding: 0.5rem 1.5rem;
-    font-size: 0.9rem;
-    font-weight: 600;
-    color: #006D94;
-    background-color: transparent;
-    border: 1px solid #006D94;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.2s, color 0.2s;
-}
-.editButton:hover {
-    background-color: #f0f8ff;
-}
-
-.saveButton, .cancelButton {
-    padding: 0.75rem 2rem;
-    font-size: 1rem;
-    font-weight: 600;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.2s, opacity 0.2s;
-}
-
-.saveButton {
-    background-color: #006D94;
-    color: white;
-}
-.saveButton:hover:not(:disabled) {
-    background-color: #005a7a;
-}
-.saveButton:disabled {
-    background-color: #ccc;
-    cursor: not-allowed;
-}
-
-.cancelButton {
-    background-color: #6c757d;
-    color: white;
-}
-.cancelButton:hover {
-    background-color: #5a6268;
-}
-
-.buttonGroup {
-    display: flex;
-    justify-content: flex-end;
-    gap: 1rem;
-    margin-top: 1.5rem;
-}
-
-.markdownDisplay {
-    padding: 0.5rem;
-    line-height: 1.7;
-    color: #4a5568;
-}
-
-.markdownDisplay h1, .markdownPreview h1 {
-    font-size: 2em;
-    margin-top: 1.5rem;
-    margin-bottom: 1rem;
-    border-bottom: 1px solid #eee;
-    padding-bottom: 0.3em;
-    font-weight: 600;
-}
-.markdownDisplay h2, .markdownPreview h2 {
-    font-size: 1.5em;
-    margin-top: 1.5rem;
-    margin-bottom: 1rem;
-    border-bottom: 1px solid #eee;
-    padding-bottom: 0.3em;
-    font-weight: 600;
-}
-.markdownDisplay h3, .markdownPreview h3 {
-    font-size: 1.25em;
-    margin-top: 1.2rem;
-    margin-bottom: 0.8rem;
-    font-weight: 600;
-}
-.markdownDisplay p, .markdownPreview p {
-    margin-bottom: 1rem;
-}
-.markdownDisplay ul, .markdownPreview ul,
-.markdownDisplay ol, .markdownPreview ol {
-    padding-left: 2rem;
-    margin-bottom: 1rem;
-    list-style-position: outside;
-}
-.markdownDisplay ol, .markdownPreview ol {
-    list-style-type: decimal;
-}
-.markdownDisplay ul, .markdownPreview ul {
-    list-style-type: disc;
-}
-.markdownDisplay li, .markdownPreview li {
-    margin-bottom: 0.5rem;
-}
-.markdownDisplay ul ul, .markdownPreview ul ul,
-.markdownDisplay ol ul, .markdownPreview ol ul,
-.markdownDisplay ul ol, .markdownPreview ul ol,
-.markdownDisplay ol ol, .markdownPreview ol ol {
-    margin-top: 0.5rem;
-    margin-bottom: 0.5rem;
-}
-.markdownDisplay a, .markdownPreview a {
-    color: #006D94;
-    text-decoration: underline;
-}
-.markdownDisplay a:hover, .markdownPreview a:hover {
-    color: #005a7a;
-}
-.markdownDisplay strong, .markdownPreview strong {
-    font-weight: 600;
-}
-.markdownDisplay del, .markdownPreview del {
-    text-decoration: line-through;
-}
-.markdownDisplay hr, .markdownPreview hr {
-    border: none;
-    border-top: 1px solid #eee;
-    margin: 1.5rem 0;
-}
-.markdownDisplay table, .markdownPreview table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-bottom: 1rem;
-    display: block;
-    overflow-x: auto;
-}
-.markdownDisplay th, .markdownPreview th,
-.markdownDisplay td, .markdownPreview td {
-    border: 1px solid #ddd;
-    padding: 0.75rem;
-}
-.markdownDisplay th, .markdownPreview th {
-    font-weight: 600;
-    background-color: #f9f9f9;
-}
-.markdownDisplay img, .markdownPreview img {
-    max-width: 100%;
-    height: auto;
-    border-radius: 8px;
-}
-.markdownDisplay code, .markdownPreview code {
-    background-color: #e9ecef;
-    padding: 0.2em 0.4em;
-    border-radius: 3px;
-    font-family: monospace;
-}
-.markdownDisplay pre, .markdownPreview pre {
-    background-color: #e9ecef;
-    padding: 1rem;
-    border-radius: 5px;
-    overflow-x: auto;
-}
-.markdownDisplay blockquote, .markdownPreview blockquote {
-    border-left: 4px solid #ccc;
-    padding-left: 1rem;
-    color: #666;
-    margin: 1rem 0;
+    background-color: rgba(0,0,0,0.7);
 } 

@@ -1,0 +1,21 @@
+.scoop {
+  width: 100%;
+  height: 100%;
+  background-color: var(--scoop-color, white);
+  
+  /* 
+    This mask uses a CSS variable (--scoop-position) to dynamically set the corner.
+  */
+  mask: radial-gradient(
+      circle at var(--scoop-position, bottom right), 
+      transparent 0,
+      transparent var(--scoop-size, 50px), 
+      black var(--scoop-size, 50px)
+  );
+  -webkit-mask: radial-gradient(
+      circle at var(--scoop-position, bottom right), 
+      transparent 0,
+      transparent var(--scoop-size, 50px), 
+      black var(--scoop-size, 50px)
+  );
+} 
