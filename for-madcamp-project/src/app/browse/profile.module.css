@@ -44,6 +44,16 @@
     transform: scale(1.1);
 }
 
+.avatarWrapper.editable,
+.avatarWrapper.clickable {
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.avatarWrapper.clickable:hover {
+  transform: scale(1.05);
+}
+
 .avatar {
   width: 128px;
   height: 128px;
@@ -147,8 +157,24 @@
 }
 
 .interestViewItem {
-  border-left: 3px solid #006D94;
-  padding-left: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start; /* Align items to the top */
+  padding: 1rem 0;
+  border-bottom: 1px solid #f3f4f6;
+  gap: 1rem;
+}
+
+.interestContent {
+  flex-grow: 1;
+}
+
+.interestActions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.5rem;
+  flex-shrink: 0; /* Prevent this column from shrinking */
 }
 
 .interestTitle {
@@ -159,68 +185,138 @@
 
 .interestDescription {
   margin: 0;
+  color: #6b7280;
+  font-size: 0.9rem;
+}
+
+.interestedUsersContainer {
+  display: flex;
+  align-items: center;
+  /* margin-top: 12px; */ /* Removed to align with rating */
+  /* padding-top: 8px; */ /* Removed */
+  /* border-top: 1px solid #e5e7eb; */ /* Removed */
+}
+
+.interestedUser {
+  display: block;
+  margin-right: -8px; /* Creates the overlapping effect */
+  transition: transform 0.2s ease;
+}
+
+.interestedUser:hover {
+  transform: translateY(-2px);
+  z-index: 10;
+}
+
+.interestedUserAvatar {
+  border-radius: 50%;
+  border: 2px solid #ffffff;
+  background-color: #f3f4f6;
+  object-fit: cover;
+}
+
+.viewAllButton {
+  background-color: #f3f4f6;
   color: #4b5563;
+  border: none; /* Removed border */
+  border-radius: 50%; /* Make it circular */
+  padding: 0;
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  margin-left: 4px;
+  transition: background-color 0.2s;
+  height: 28px; /* Match avatar height */
+  width: 28px; /* Match avatar width */
+  display: flex;
+  align-items: center;
+  justify-content: center; /* Center the content */
+  line-height: 1;
+}
+
+.viewAllButton:hover {
+  background-color: #e5e7eb;
 }
 
 /* --- Project Cards on Browse Page --- */
 .projectsGrid {
-  display: flex;
-  gap: 1.5rem;
-  height: 250px; /* Or other appropriate fixed height */
+    display: flex; /* Changed back to flex for animation */
+    gap: 1.5rem;
+    height: 250px; /* Restore fixed height for consistent animation */
 }
 
 .projectCard {
-  flex: 1;
-  position: relative;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-  transition: flex 0.4s ease-in-out;
-  background-color: white;
-  background-size: cover;
-  background-position: center;
-  border: 1px solid #e5e7eb;
-  color: inherit;
-  text-decoration: none;
-  display: block; /* For Link tag */
+    flex: 1; /* Equal width by default */
+    border-radius: 16px; /* Slightly larger radius */
+    background-color: #ffffff;
+    background-size: cover;
+    background-position: center;
+    position: relative;
+    overflow: hidden;
+    text-decoration: none;
+    color: white;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    transition: flex 0.4s cubic-bezier(0.25, 0.8, 0.25, 1); /* Smoother transition */
+    border: 1px solid #e5e7eb;
 }
 
 .projectCard:hover {
-  flex: 4;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+    flex: 3; /* Expands on hover */
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
 }
 
 .projectCardContent {
+    width: 100%;
+    height: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 100%;
-    height: 100%;
+    padding: 1rem;
+    text-align: center;
+    position: relative;
+    z-index: 2;
 }
 
+/* This is the overlay that appears on hover */
 .projectCardOverlay {
-    background-color: rgba(0, 0, 0, 0.4);
+    background-color: rgba(0, 0, 0, 0.5);
+    opacity: 0;
+    transition: opacity 0.2s ease-in-out;
+}
+
+.projectCard:hover .projectCardOverlay {
+    opacity: 1;
 }
 
 .projectCardTitle {
     font-size: 1.25rem;
-    font-weight: bold;
-    color: white;
-    padding: 0 1rem;
-    text-align: center;
-    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7);
-}
-
-.projectCardEmptyTitle {
-    font-size: 1.25rem;
-    font-weight: bold;
-    color: #333;
+    font-weight: 700;
+    opacity: 0; 
+    transform: translateY(10px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    transition-delay: 0.1s;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
 }
 
 .projectCardNoImageTitle {
+    font-weight: 700;
+    color: #495057;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    transition-delay: 0.1s;
+}
+
+.projectCard:hover .projectCardTitle, 
+.projectCard:hover .projectCardNoImageTitle {
+    opacity: 1; /* Visible on hover */
+    transform: translateY(0);
+}
+
+.projectCardEmptyTitle {
+    color: #adb5bd;
+    font-weight: 500;
     font-size: 1.25rem;
-    font-weight: bold;
-    color: #006D94; /* Primary color */
 }
 
 /* 수정 모드 */
@@ -276,6 +372,8 @@
 
 .section {
   margin-bottom: 3rem;
+  background-color: #ffffff;
+  border-radius: 12px;
 }
 
 .sectionTitle {

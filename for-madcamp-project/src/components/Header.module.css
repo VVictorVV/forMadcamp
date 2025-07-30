@@ -37,6 +37,10 @@
   /* 배경색, 패딩, 테두리 둥글기 속성 제거 */
 }
 
+.userName {
+  margin-left: 8px;
+}
+
 .navLinks {
   display: flex;
   align-items: center;

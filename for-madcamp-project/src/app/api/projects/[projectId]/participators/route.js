@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '../../../../../../lib/supabaseClient';
+import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
+import { cookies } from 'next/headers';
 
 export async function POST(req, { params }) {
   try {
@@ -146,4 +148,109 @@ export async function POST(req, { params }) {
       { status: 500 }
     );
   }
+} 
+
+export async function PUT(request, { params }) {
+    const cookieStore = cookies();
+    const supabase = createRouteHandlerClient({ cookies: () => cookieStore });
+    const { projectId } = params;
+    const { newParticipantIds } = await request.json();
+
+    if (!Array.isArray(newParticipantIds)) {
+        return new Response(JSON.stringify({ error: 'Invalid input: newParticipantIds must be an array.' }), { status: 400 });
+    }
+
+    try {
+        const authHeader = request.headers.get('authorization');
+        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+            return new Response(JSON.stringify({ error: 'Authentication required' }), { status: 401 });
+        }
+        const token = authHeader.split(' ')[1];
+        const { data: { user }, error: userError } = await supabase.auth.getUser(token);
+        
+        if (userError || !user) {
+            return new Response(JSON.stringify({ error: 'Authentication failed' }), { status: 401 });
+        }
+        const userId = user.id;
+
+        // 1. Verify project and get its class_id
+        const { data: project, error: projectError } = await supabase
+            .from('PROJECTS')
+            .select('class_id')
+            .eq('project_id', projectId)
+            .single();
+
+        if (projectError || !project || !project.class_id) {
+            return new Response(JSON.stringify({ error: 'Project not found or class not set.' }), { status: 404 });
+        }
+        const projectClassId = project.class_id;
+
+        // 2. Verify all new participants belong to the same class
+        if (newParticipantIds.length > 0) {
+            const { data: newProfiles, error: profilesError } = await supabase
+                .from('PROFILES')
+                .select('id, class_id')
+                .in('id', newParticipantIds);
+            
+            if (profilesError) throw profilesError;
+
+            const allInSameClass = newProfiles.every(p => p.class_id === projectClassId);
+            if (!allInSameClass) {
+                return new Response(JSON.stringify({ error: 'All participants must be from the same class as the project.' }), { status: 400 });
+            }
+        }
+
+        // 1. Verify that the current user is a participant of the project
+        const { data: participator, error: authError } = await supabase
+            .from('PARTICIPATOR')
+            .select('profile_id')
+            .eq('project_id', projectId)
+            .eq('profile_id', userId)
+            .single();
+
+        if (authError || !participator) {
+            return new Response(JSON.stringify({ error: 'Forbidden: You do not have permission to edit this project.' }), { status: 403 });
+        }
+
+        // 2. Get the current list of participants
+        const { data: currentParticipants, error: currentError } = await supabase
+            .from('PARTICIPATOR')
+            .select('profile_id')
+            .eq('project_id', projectId);
+
+        if (currentError) throw currentError;
+        const currentParticipantIds = currentParticipants.map(p => p.profile_id);
+        
+        // 3. Calculate differences
+        const idsToAdd = newParticipantIds.filter(id => !currentParticipantIds.includes(id));
+        const idsToRemove = currentParticipantIds.filter(id => !newParticipantIds.includes(id) && id !== userId); // Ensure the current user cannot be removed
+
+        // 4. Perform database operations
+        if (idsToRemove.length > 0) {
+            const { error: deleteError } = await supabase
+                .from('PARTICIPATOR')
+                .delete()
+                .eq('project_id', projectId)
+                .in('profile_id', idsToRemove);
+            if (deleteError) throw deleteError;
+        }
+
+        if (idsToAdd.length > 0) {
+            const newRows = idsToAdd.map(id => ({ 
+                project_id: projectId, 
+                profile_id: id,
+                role: '팀원' // Add the role here
+            }));
+            const { error: insertError } = await supabase
+                .from('PARTICIPATOR')
+                .insert(newRows);
+            if (insertError) throw insertError;
+        }
+
+        return new Response(JSON.stringify({ message: 'Participants updated successfully' }), { status: 200 });
+
+    } catch (error) {
+        console.error('Error updating participants:', error);
+        return new Response(JSON.stringify({ error: error.message || 'Failed to update participants' }), { status: 500 });
+    }
 } 

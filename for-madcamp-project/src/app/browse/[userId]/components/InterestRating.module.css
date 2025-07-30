@@ -1,0 +1,40 @@
+.ratingContainer {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.heartIcon {
+  cursor: pointer;
+  color: #e0e0e0; /* 비활성(빈 하트) 색상 */
+  transition: color 0.2s ease-in-out, transform 0.2s ease-in-out;
+}
+
+.heartIcon:hover {
+  transform: scale(1.1);
+  color: #f8b8c8; /* 호버 시 핑크빛 */
+}
+
+.heartIcon.filled {
+  color: #f43f5e; /* 활성(채워진 하트) 색상 - tailwind red-500 */
+}
+
+.heartIcon.readOnly {
+  cursor: not-allowed;
+  color: #e0e0e0;
+}
+
+.heartIcon.readOnly:hover {
+  transform: none;
+}
+
+.heartIcon.readOnly.filled {
+    color: #f43f5e; /* 읽기 전용이라도 채워진 상태는 유지 */
+}
+
+.interestWrapper {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+} 

@@ -1,168 +1,56 @@
-import { NextResponse } from 'next/server';
-import { supabase } from '../../../../lib/supabaseClient';
-import { supabaseAdmin } from '../../../../lib/supabaseAdmin';
+import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
+import { cookies } from 'next/headers';
 
-export async function PUT(req, { params }) {
-  try {
-    // 1. JWT 토큰 추출 및 검증
-    const authHeader = req.headers.get('authorization');
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return NextResponse.json(
-        { error: 'Authentication required.' },
-        { status: 401 }
-      );
+export async function PUT(request, { params }) {
+    const cookieStore = cookies();
+    const supabase = createRouteHandlerClient({ cookies: () => cookieStore });
+    const { projectId } = params;
+    const updateData = await request.json();
+
+    try {
+        const authHeader = request.headers.get('authorization');
+        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+            return new Response(JSON.stringify({ error: 'Authentication required' }), { status: 401 });
+        }
+        const token = authHeader.split(' ')[1];
+        const { data: { user }, error: userError } = await supabase.auth.getUser(token);
+        
+        if (userError || !user) {
+            return new Response(JSON.stringify({ error: 'Authentication failed' }), { status: 401 });
+        }
+
+        const userId = user.id;
+
+        const { data: participator, error: participatorError } = await supabase
+            .from('PARTICIPATOR')
+            .select('profile_id')
+            .eq('project_id', projectId)
+            .eq('profile_id', userId)
+            .single();
+
+        if (participatorError || !participator) {
+            return new Response(JSON.stringify({ error: 'Forbidden: You are not a member of this project.' }), { status: 403 });
+        }
+
+        const { data, error } = await supabase
+            .from('PROJECTS')
+            .update({
+                project_name: updateData.project_name,
+                planning: updateData.planning,
+                description: updateData.description,
+                representative_image_uri: updateData.representative_image_uri,
+            })
+            .eq('project_id', projectId)
+            .select()
+            .single();
+
+        if (error) {
+            throw error;
+        }
+
+        return new Response(JSON.stringify(data), { status: 200 });
+    } catch (error) {
+        console.error('Error updating project:', error);
+        return new Response(JSON.stringify({ error: error.message || 'Failed to update project' }), { status: 500 });
     }
-
-    const token = authHeader.replace('Bearer ', '');
-    
-    // JWT 토큰 검증
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
-    if (authError || !user) {
-      return NextResponse.json(
-        { error: 'Authentication required.' },
-        { status: 401 }
-      );
-    }
-
-    // 2. 경로 파라미터에서 projectId 추출
-    const { projectId } = await params;
-    if (!projectId) {
-      return NextResponse.json(
-        { error: 'Project ID is required.' },
-        { status: 400 }
-      );
-    }
-
-    // 3. 요청 본문 파싱
-    const requestBody = await req.json();
-    const { project_name, planning, progress, description, representative_image_uri } = requestBody;
-
-    // 4. 프로젝트 존재 여부 확인
-    const { data: project, error: projectError } = await supabase
-      .from('PROJECTS')
-      .select('*')
-      .eq('project_id', projectId)
-      .single();
-
-    if (projectError || !project) {
-      return NextResponse.json(
-        { error: 'Project not found.' },
-        { status: 404 }
-      );
-    }
-
-    // 5. 권한 검증: PARTICIPATOR에서 참여자인지 확인
-    const { data: participatorsRaw, error: participatorsError } = await supabase
-      .from('PARTICIPATOR')
-      .select('profile_id, role')
-      .eq('project_id', projectId);
-    if (participatorsError) {
-      return NextResponse.json(
-        { error: 'Internal server error.' },
-        { status: 500 }
-      );
-    }
-    const isParticipant = participatorsRaw.some(p => p.profile_id === user.id);
-    if (!isParticipant) {
-      return NextResponse.json(
-        { error: 'You are not a member of this project.' },
-        { status: 403 }
-      );
-    }
-
-    // 6. 업데이트할 데이터 준비
-    const updateData = {};
-    if (project_name !== undefined) updateData.project_name = project_name;
-    if (planning !== undefined) updateData.planning = planning;
-    if (description !== undefined) updateData.description = description; // description 추가
-    if (representative_image_uri !== undefined) updateData.representative_image_uri = representative_image_uri; // 이미지 URI 업데이트 추가
-    if (progress !== undefined) {
-      if (progress < 0 || progress > 100) {
-        return NextResponse.json(
-          { error: 'Progress must be between 0 and 100.' },
-          { status: 400 }
-        );
-      }
-      updateData.progress = progress;
-    }
-
-    // 7. 프로젝트 정보 업데이트 (with admin privileges)
-    const { error: updateError } = await supabaseAdmin
-      .from('PROJECTS')
-      .update(updateData)
-      .eq('project_id', projectId);
-
-    if (updateError) {
-      console.error('Project update error:', updateError);
-      return NextResponse.json(
-        { error: 'Failed to update project.' },
-        { status: 500 }
-      );
-    }
-
-    // 업데이트된 프로젝트 정보 다시 조회
-    const { data: updatedProject, error: refetchError } = await supabase
-        .from('PROJECTS')
-        .select('*')
-        .eq('project_id', projectId)
-        .single();
-
-    if (refetchError || !updatedProject) {
-        console.error('Failed to refetch project data:', refetchError);
-        return NextResponse.json(
-            { error: 'Failed to retrieve updated project data.' },
-            { status: 500 }
-        );
-    }
-
-    // 8. 참여자 정보 조회 (profileId, name, role)
-    const profileIds = participatorsRaw.map(p => p.profile_id);
-    const { data: profiles, error: profilesError } = await supabase
-      .from('PROFILES')
-      .select('id, name')
-      .in('id', profileIds);
-    if (profilesError) {
-      console.error('Profiles query error:', profilesError);
-    }
-    const participators = participatorsRaw.map(p => {
-      const profile = profiles?.find(pr => pr.id === p.profile_id);
-      return {
-        profileId: p.profile_id,
-        name: profile?.name || '',
-        role: p.role
-      };
-    });
-
-    // 9. 응답 데이터 구성
-    const responseData = {
-      projectId: updatedProject.project_id,
-      projectName: updatedProject.project_name,
-      classId: updatedProject.class_id,
-      weekNum: updatedProject.week_num,
-      createdAt: updatedProject.created_at,
-      planning: updatedProject.planning,
-      description: updatedProject.description, // description 추가
-      progress: updatedProject.progress,
-      representativeImageUri: updatedProject.representative_image_uri,
-      participators
-    };
-
-    return NextResponse.json(responseData, { status: 200 });
-
-  } catch (err) {
-    console.error('Unexpected server error:', err);
-    
-    // JSON 파싱 에러 처리
-    if (err instanceof SyntaxError) {
-      return NextResponse.json(
-        { error: 'Invalid request body.' },
-        { status: 400 }
-      );
-    }
-    
-    return NextResponse.json(
-      { error: 'Internal server error.' },
-      { status: 500 }
-    );
-  }
 } 

@@ -69,7 +69,12 @@ const Header = () => {
         <Link href="/" className={styles.logoLink}>
           <Image src="/logo.svg" alt="Madcamp Logo" width={30} height={30} />
         </Link>
-        {user && userClass && <span className={styles.userClass}>{userClass}</span>}
+        {user && userClass && (
+          <span className={styles.userClass}>
+            {userClass}
+            <span className={styles.userName}>{user.name}</span>
+          </span>
+        )}
       </div>
       
       {/* 진행도 바 - 중앙에 위치 */}
