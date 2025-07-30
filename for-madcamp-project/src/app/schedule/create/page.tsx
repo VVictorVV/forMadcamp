@@ -6,6 +6,8 @@ import { useAuth } from '../../../context/AuthContext';
 import { supabase } from '../../../lib/supabaseClient';
 import styles from './createSchedule.module.css';
 import Image from 'next/image';
+import TimeSelector from '../../../components/TimeSelector';
+import RelatedPolls from '../../../components/RelatedPolls';
 
 interface Participant {
   id: string;
@@ -34,12 +36,32 @@ const CreateSchedulePage = () => {
     class_id: number | null;
   }>>([]);
   const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
+  const [selectedPollId, setSelectedPollId] = useState<number | null>(null);
 
-  // 현재 날짜와 시간을 기본값으로 설정
+  // 현재 날짜와 시간을 기본값으로 설정 (한국 시간 기준, 30분 단위)
   useEffect(() => {
     const now = new Date();
-    const today = now.toISOString().split('T')[0];
-    const currentTime = now.toTimeString().slice(0, 5);
+    
+    // 한국 시간으로 변환 (UTC+9)
+    const koreaOffset = 9 * 60; // 9시간을 분으로 변환
+    const koreaTime = new Date(now.getTime() + koreaOffset * 60 * 1000);
+    
+    // 한국 시간 기준으로 날짜와 시간 설정
+    const year = koreaTime.getUTCFullYear();
+    const month = (koreaTime.getUTCMonth() + 1).toString().padStart(2, '0');
+    const day = koreaTime.getUTCDate().toString().padStart(2, '0');
+    const today = `${year}-${month}-${day}`;
+    
+    // 30분 단위로 반올림
+    const currentHour = koreaTime.getUTCHours();
+    const currentMinute = koreaTime.getUTCMinutes();
+    const roundedMinute = currentMinute >= 30 ? 30 : 0;
+    
+    const hours = currentHour.toString().padStart(2, '0');
+    const minutes = roundedMinute.toString().padStart(2, '0');
+    const currentTime = `${hours}:${minutes}`;
+    
+    console.log('Create schedule - Korea current time (30min rounded):', today, currentTime);
     
     setStartDate(today);
     setStartTime(currentTime);
@@ -64,9 +86,9 @@ const CreateSchedulePage = () => {
       return;
     }
 
-    // 시작 시간과 종료 시간 비교
-    const startDateTime = new Date(`${startDate}T${startTime}`);
-    const endDateTime = new Date(`${endDate}T${endTime}`);
+    // 시작 시간과 종료 시간 비교 (로컬 시간대로 처리)
+    const startDateTime = new Date(`${startDate}T${startTime}:00`);
+    const endDateTime = new Date(`${endDate}T${endTime}:00`);
     
     if (endDateTime <= startDateTime) {
       setError('종료 시간은 시작 시간보다 늦어야 합니다.');
@@ -94,7 +116,8 @@ const CreateSchedulePage = () => {
           description: description.trim(),
           when: startDateTime.toISOString(),
           until: endDateTime.toISOString(),
-          participantIds: participants.map(p => p.id)
+          participantIds: participants.map(p => p.id),
+          relatedPollId: selectedPollId
         })
       });
 
@@ -255,11 +278,9 @@ const CreateSchedulePage = () => {
                       onChange={(e) => setStartDate(e.target.value)}
                       className={styles.dateInput}
                     />
-                    <input
-                      type="time"
+                    <TimeSelector
                       value={startTime}
-                      onChange={(e) => setStartTime(e.target.value)}
-                      className={styles.timeInput}
+                      onChange={setStartTime}
                     />
                   </div>
                 </div>
@@ -272,14 +293,23 @@ const CreateSchedulePage = () => {
                       onChange={(e) => setEndDate(e.target.value)}
                       className={styles.dateInput}
                     />
-                    <input
-                      type="time"
+                    <TimeSelector
                       value={endTime}
-                      onChange={(e) => setEndTime(e.target.value)}
-                      className={styles.timeInput}
+                      onChange={setEndTime}
                     />
                   </div>
                 </div>
+              </div>
+            </div>
+
+            {/* 연관 투표 섹션 */}
+            <div className={styles.formSection}>
+              <label className={styles.label}>연관 투표</label>
+              <div className={styles.relatedPollsContainer}>
+                <RelatedPolls
+                  onPollSelect={setSelectedPollId}
+                  readonly={false}
+                />
               </div>
             </div>
           </div>

@@ -156,8 +156,8 @@ export async function PUT(req, { params }) {
     }
 
     // 3. 요청 본문 파싱
-    const { scheduleName, when, until, description } = await req.json();
-    if (!scheduleName && !when && !until && !description) {
+    const { scheduleName, when, until, description, relatedPollId } = await req.json();
+    if (!scheduleName && !when && !until && !description && relatedPollId === undefined) {
       return NextResponse.json(
         { error: 'Invalid request body.' },
         { status: 400 }
@@ -255,6 +255,7 @@ export async function PUT(req, { params }) {
     if (when !== undefined) updateData.when = when;
     if (until !== undefined) updateData.until = until;
     if (description !== undefined) updateData.description = description;
+    if (relatedPollId !== undefined) updateData.related_poll = relatedPollId;
 
     const { data: updatedSchedule, error: updateError } = await supabase
       .from('SCHEDULES')

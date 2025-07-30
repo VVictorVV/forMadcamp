@@ -22,7 +22,7 @@ export async function POST(req) {
     }
 
     // 2. 요청 본문 파싱
-    const { scheduleName, when, until, description, participantIds } = await req.json();
+    const { scheduleName, when, until, description, participantIds, relatedPollId } = await req.json();
 
     // 3. 필수 필드 유효성 검사
     if (!scheduleName || !when || !description) {
@@ -101,7 +101,7 @@ export async function POST(req) {
         when: when,
         until: until,
         description: description,
-        related_poll: null // API 33에서는 연관된 투표가 없음
+        related_poll: relatedPollId || null
       })
       .select('*')
       .single();

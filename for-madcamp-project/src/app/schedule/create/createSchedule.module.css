@@ -62,6 +62,7 @@
   flex: 0 0 70%;
 }
 
+/* --- 폼 섹션 --- */
 .formSection {
   margin-bottom: 2rem;
 }
@@ -70,8 +71,12 @@
   display: block;
   font-size: 1rem;
   font-weight: 600;
-  color: #374151;
-  margin-bottom: 0.5rem;
+  color: #111827;
+  margin-bottom: 0.75rem;
+}
+
+.relatedPollsContainer {
+  margin-top: 0.5rem;
 }
 
 .titleInput {
@@ -117,7 +122,6 @@
   color: #9ca3af;
 }
 
-/* --- 시간 설정 --- */
 .timeContainer {
   display: flex;
   flex-direction: column;

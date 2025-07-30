@@ -32,6 +32,17 @@
   margin-bottom: 3rem;
 }
 
+.titleHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 2rem;
+}
+
+.titleContent {
+  flex: 1;
+}
+
 .pageTitle {
   font-size: 2.5rem;
   font-weight: 600;
@@ -44,6 +55,158 @@
   color: #6b7280;
   margin: 0;
   line-height: 1.5;
+}
+
+.deleteButton {
+  background: #fee2e2;
+  color: #dc2626;
+  border: 2px solid #fecaca;
+  border-radius: 8px;
+  padding: 0.5rem 1rem;
+  font-weight: 600;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.deleteButton:hover {
+  background: #fca5a5;
+  border-color: #f87171;
+  transform: translateY(-1px);
+}
+
+.deleteButton:active {
+  transform: translateY(0);
+}
+
+/* --- 모달 스타일 --- */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.modalContent {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  max-width: 400px;
+  width: 100%;
+  max-height: 90vh;
+  overflow: auto;
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem 1.5rem 0 1.5rem;
+}
+
+.modalTitle {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #111827;
+  margin: 0;
+}
+
+.modalCloseButton {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: #9ca3af;
+  cursor: pointer;
+  padding: 0.25rem;
+  line-height: 1;
+  border-radius: 4px;
+  transition: color 0.2s;
+}
+
+.modalCloseButton:hover {
+  color: #6b7280;
+}
+
+.modalBody {
+  padding: 1.5rem;
+}
+
+.modalDescription {
+  font-size: 1rem;
+  color: #374151;
+  margin: 0 0 1rem 0;
+  line-height: 1.5;
+}
+
+.modalWarning {
+  font-size: 0.875rem;
+  color: #dc2626;
+  margin: 0;
+  padding: 0.75rem;
+  background: #fef2f2;
+  border-left: 4px solid #fca5a5;
+  border-radius: 4px;
+  line-height: 1.4;
+}
+
+.modalFooter {
+  display: flex;
+  gap: 0.75rem;
+  padding: 0 1.5rem 1.5rem 1.5rem;
+}
+
+.modalCancelButton {
+  flex: 1;
+  background: #ffffff;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  color: #374151;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.modalCancelButton:hover:not(:disabled) {
+  border-color: #9ca3af;
+  background: #f9fafb;
+}
+
+.modalCancelButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.modalDeleteButton {
+  flex: 1;
+  background: #dc2626;
+  border: none;
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.modalDeleteButton:hover:not(:disabled) {
+  background: #b91c1c;
+  transform: translateY(-1px);
+}
+
+.modalDeleteButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
 }
 
 /* --- 메인 콘텐츠 --- */
@@ -399,3 +562,147 @@
     font-size: 1rem;
   }
 } 
+
+/* --- 참여/불참 버튼 섹션 --- */
+.participationActions {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.statusInfo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border-left: 4px solid #006D94;
+}
+
+.statusLabel {
+  font-weight: 600;
+  color: #374151;
+}
+
+.statusValue {
+  font-weight: 600;
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.875rem;
+}
+
+.status참석 {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.status불참 {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.status미정 {
+  background: #fef3c7;
+  color: #d97706;
+}
+
+.statusNone {
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
+.participationButtons {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.participationButton {
+  flex: 1;
+  padding: 0.875rem 1.25rem;
+  border: 2px solid transparent;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.participationButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.attendButton {
+  background: #f0fdf4;
+  color: #166534;
+  border-color: #bbf7d0;
+}
+
+.attendButton:hover:not(:disabled) {
+  background: #dcfce7;
+  border-color: #86efac;
+  transform: translateY(-1px);
+}
+
+.attendButton.active {
+  background: #22c55e;
+  color: white;
+  border-color: #16a34a;
+}
+
+.absentButton {
+  background: #fef2f2;
+  color: #dc2626;
+  border-color: #fecaca;
+}
+
+.absentButton:hover:not(:disabled) {
+  background: #fee2e2;
+  border-color: #fca5a5;
+  transform: translateY(-1px);
+}
+
+.absentButton.active {
+  background: #ef4444;
+  color: white;
+  border-color: #dc2626;
+}
+
+.pendingButton {
+  background: #fffbeb;
+  color: #d97706;
+  border-color: #fed7aa;
+}
+
+.pendingButton:hover:not(:disabled) {
+  background: #fef3c7;
+  border-color: #fde68a;
+  transform: translateY(-1px);
+}
+
+.pendingButton.active {
+  background: #f59e0b;
+  color: white;
+  border-color: #d97706;
+}
+
+/* 모바일 반응형 */
+@media (max-width: 768px) {
+  .participationButtons {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .participationButton {
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
+  }
+} 
+
+.relatedPollsContainer {
+  margin-top: 0.5rem;
+}
+
+/* --- 폼 입력 --- */ 

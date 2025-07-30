@@ -108,14 +108,37 @@ const SchedulePage = () => {
     });
   };
 
-  // 시간을 그리드 위치로 변환하는 함수 (30분 단위)
+  // 시간을 30분 단위 슬롯 인덱스로 변환하는 함수 (일정 배치용)
+  const getTimeSlotIndex = (timeString: string) => {
+    const date = new Date(timeString);
+    
+    // 한국 시간 추출 (UTC+9)
+    const koreaOffset = 9 * 60; // 9시간을 분으로 변환
+    const koreaTime = new Date(date.getTime() + koreaOffset * 60 * 1000);
+    const localHours = koreaTime.getUTCHours();
+    const localMinutes = koreaTime.getUTCMinutes();
+    
+    // 총 분수를 계산하고 30분 슬롯 인덱스로 변환
+    const totalMinutes = localHours * 60 + localMinutes;
+    const slotIndex = totalMinutes / 30; // 30분 단위 슬롯 인덱스
+    
+    console.log('getTimeSlotIndex - Time:', timeString, 'Korea:', `${localHours}:${localMinutes}`, 'Slot:', slotIndex);
+    
+    return slotIndex;
+  };
+
+  // 시간을 소수점 시간으로 변환하는 함수 (높이 계산용)
   const getTimePosition = (timeString: string) => {
     const date = new Date(timeString);
-    const hours = date.getHours();
-    const minutes = date.getMinutes();
-    // 30분 단위로 반올림
-    const roundedMinutes = Math.round(minutes / 30) * 30;
-    return hours + roundedMinutes / 60;
+    
+    // 한국 시간 추출 (UTC+9)
+    const koreaOffset = 9 * 60; // 9시간을 분으로 변환
+    const koreaTime = new Date(date.getTime() + koreaOffset * 60 * 1000);
+    const localHours = koreaTime.getUTCHours();
+    const localMinutes = koreaTime.getUTCMinutes();
+    
+    // 소수점 시간으로 반환 (높이 계산에 사용)
+    return localHours + localMinutes / 60;
   };
 
   // 일정의 높이를 계산하는 함수 (시간 단위)
@@ -131,12 +154,45 @@ const SchedulePage = () => {
   };
 
   // 특정 시간대의 일정을 가져오는 함수
-  const getSchedulesAtTime = (daySchedules: Schedule[], timeSlot: number) => {
+  const getSchedulesAtTime = (daySchedules: Schedule[], timeSlot: number, dayDate: Date) => {
     return daySchedules.filter(schedule => {
-      const startTime = getTimePosition(schedule.when);
-      const endTime = startTime + getScheduleHeight(schedule);
-      // 일정이 해당 시간 슬롯에서 시작하는 경우만 반환
-      return Math.floor(startTime) === timeSlot;
+      const scheduleStart = new Date(schedule.when);
+      const scheduleEnd = schedule.until ? new Date(schedule.until) : new Date(scheduleStart.getTime() + 60 * 60 * 1000);
+      
+      // 해당 날짜에서의 시작 시간과 종료 시간 계산
+      const dayStart = new Date(dayDate);
+      dayStart.setHours(0, 0, 0, 0);
+      const dayEnd = new Date(dayStart);
+      dayEnd.setDate(dayStart.getDate() + 1);
+      
+      let displayStartTime;
+      let displayEndTime;
+      
+      if (scheduleStart < dayStart) {
+        // 일정이 전날에 시작된 경우, 해당 날짜의 00:00부터 표시
+        displayStartTime = 0;
+        const effectiveEnd = scheduleEnd < dayEnd ? scheduleEnd : dayEnd;
+        displayEndTime = getTimeSlotIndex(effectiveEnd.toISOString());
+      } else {
+        // 일정이 해당 날짜에 시작된 경우, 실제 시작 시간 사용
+        displayStartTime = getTimeSlotIndex(schedule.when);
+        
+        if (scheduleEnd >= dayEnd) {
+          // 일정이 다음날로 넘어가는 경우, 해당 날의 마지막 슬롯(47번, 11:30PM)까지 표시
+          displayEndTime = 48; // 48 = 다음날 0시를 의미하는 슬롯 (47번 슬롯 이후)
+        } else {
+          // 일정이 해당 날에 끝나는 경우
+          displayEndTime = getTimeSlotIndex(scheduleEnd.toISOString());
+        }
+      }
+      
+      console.log(`Schedule at time - Day: ${dayDate.toDateString()}, TimeSlot: ${timeSlot}, Schedule: ${schedule.scheduleName}, DisplayStart: ${displayStartTime}, DisplayEnd: ${displayEndTime}`);
+      
+      // 해당 시간 슬롯에서 진행 중인 일정인지 확인
+      const timeSlotStart = timeSlot;
+      const timeSlotEnd = timeSlot + 1; // 30분 슬롯 (1 인덱스 = 30분)
+      
+      return (displayStartTime < timeSlotEnd && displayEndTime > timeSlotStart);
     });
   };
 
@@ -150,10 +206,15 @@ const SchedulePage = () => {
       date.setDate(currentDate.getDate() - currentDate.getDay() + i);
       
       const daySchedules = weekSchedules.filter(schedule => {
-        const scheduleDate = new Date(schedule.when);
-        const scheduleDay = new Date(scheduleDate.getFullYear(), scheduleDate.getMonth(), scheduleDate.getDate());
+        const scheduleStart = new Date(schedule.when);
+        const scheduleEnd = schedule.until ? new Date(schedule.until) : new Date(scheduleStart.getTime() + 60 * 60 * 1000);
+        
         const targetDay = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-        return scheduleDay.getTime() === targetDay.getTime();
+        const nextDay = new Date(targetDay);
+        nextDay.setDate(targetDay.getDate() + 1);
+        
+        // 일정이 해당 날짜와 겹치는지 확인
+        return scheduleStart < nextDay && scheduleEnd > targetDay;
       });
 
       days.push({
@@ -228,14 +289,131 @@ const SchedulePage = () => {
     }).sort((a, b) => new Date(a.when).getTime() - new Date(b.when).getTime());
   };
 
-  // 시간 포맷 함수
+  // 시간 포맷 함수 (한국 시간 처리)
   const formatTime = (timeString: string) => {
     const date = new Date(timeString);
-    const hours = date.getHours();
-    const minutes = date.getMinutes();
+    
+    // 한국 시간 추출 (UTC+9)
+    const koreaOffset = 9 * 60; // 9시간을 분으로 변환
+    const koreaTime = new Date(date.getTime() + koreaOffset * 60 * 1000);
+    const hours = koreaTime.getUTCHours();
+    const minutes = koreaTime.getUTCMinutes();
+    
     const period = hours < 12 ? 'AM' : 'PM';
     const displayHours = hours === 0 ? 12 : hours > 12 ? hours - 12 : hours;
+    
+    // 디버깅 정보
+    console.log('formatTime - Original:', timeString, 'Korea hours:', hours, 'minutes:', minutes, 'Display:', `${displayHours}:${minutes.toString().padStart(2, '0')} ${period}`);
+    
     return `${displayHours}:${minutes.toString().padStart(2, '0')} ${period}`;
+  };
+
+  // 하루에서 최대 겹치는 일정 개수를 계산하는 함수
+  const getMaxOverlappingCount = (daySchedules: Schedule[], dayDate: Date) => {
+    if (daySchedules.length === 0) return 0;
+    
+    const dayStart = new Date(dayDate);
+    dayStart.setHours(0, 0, 0, 0);
+    const dayEnd = new Date(dayStart);
+    dayEnd.setDate(dayStart.getDate() + 1);
+    
+    // 각 시간 포인트에서 겹치는 일정 개수를 계산
+    let maxOverlap = 0;
+    
+    // 30분 단위로 체크 (0~47 슬롯)
+    for (let slot = 0; slot < 48; slot++) {
+      const slotTime = new Date(dayStart.getTime() + slot * 30 * 60 * 1000);
+      
+      let overlapCount = 0;
+      
+      daySchedules.forEach(schedule => {
+        const scheduleStart = new Date(schedule.when);
+        const scheduleEnd = schedule.until ? new Date(schedule.until) : new Date(scheduleStart.getTime() + 60 * 60 * 1000);
+        
+        // 해당 슬롯 시간이 일정 범위 안에 있는지 확인 (겹침 계산)
+        // 시작 시간 <= 슬롯 시간 < 종료 시간인 경우 겹침으로 계산
+        if (scheduleStart <= slotTime && scheduleEnd > slotTime) {
+          overlapCount++;
+        }
+      });
+      
+      maxOverlap = Math.max(maxOverlap, overlapCount);
+      
+      // 디버깅용 로그 (첫 번째와 마지막 슬롯만)
+      if (slot === 0 || slot === 47 || overlapCount > 0) {
+        const slotHour = Math.floor(slot / 2);
+        const slotMinute = (slot % 2) * 30;
+        console.log(`Slot ${slot} (${slotHour}:${slotMinute.toString().padStart(2, '0')}): ${overlapCount} overlapping schedules`);
+      }
+    }
+    
+    console.log(`Max overlapping count for ${dayDate.toDateString()}: ${maxOverlap}`);
+    return maxOverlap;
+  };
+
+  // 날짜별 일정의 슬롯 배치를 계산하는 함수
+  const calculateScheduleSlots = (daySchedules: Schedule[], dayDate: Date) => {
+    if (daySchedules.length === 0) return { slotAssignment: new Map(), maxSlots: 0 };
+    
+    const dayStart = new Date(dayDate);
+    dayStart.setHours(0, 0, 0, 0);
+    const dayEnd = new Date(dayStart);
+    dayEnd.setDate(dayStart.getDate() + 1);
+    
+    // 일정을 시작 시간 순으로 정렬
+    const sortedSchedules = [...daySchedules].sort((a, b) => {
+      const aStart = new Date(a.when);
+      const bStart = new Date(b.when);
+      return aStart.getTime() - bStart.getTime();
+    });
+    
+    const maxSlots = getMaxOverlappingCount(daySchedules, dayDate);
+    const slotAssignment = new Map<number, number>(); // scheduleId -> slotIndex
+    const slotEndTimes: Date[] = new Array(maxSlots).fill(null); // 각 슬롯의 종료 시간
+    
+    sortedSchedules.forEach(schedule => {
+      const scheduleStart = new Date(schedule.when);
+      const scheduleEnd = schedule.until ? new Date(schedule.until) : new Date(scheduleStart.getTime() + 60 * 60 * 1000);
+      
+      // 일정이 해당 날짜와 겹치는지 확인
+      if (!(scheduleStart < dayEnd && scheduleEnd > dayStart)) {
+        return; // 해당 날짜와 겹치지 않음
+      }
+      
+      // 배치할 슬롯 찾기
+      let assignedSlot = -1;
+      for (let slotIndex = 0; slotIndex < maxSlots; slotIndex++) {
+        const slotEndTime = slotEndTimes[slotIndex];
+        
+        // 슬롯이 비어있거나, 슬롯의 종료 시간이 현재 일정의 시작 시간보다 이르면 배치 가능
+        if (!slotEndTime || slotEndTime <= scheduleStart) {
+          assignedSlot = slotIndex;
+          slotEndTimes[slotIndex] = scheduleEnd;
+          break;
+        }
+      }
+      
+      if (assignedSlot !== -1) {
+        slotAssignment.set(schedule.scheduleId, assignedSlot);
+        console.log(`Schedule "${schedule.scheduleName}" assigned to slot ${assignedSlot} on ${dayDate.toDateString()}`);
+      }
+    });
+    
+    return { slotAssignment, maxSlots };
+  };
+
+  // 슬롯 인덱스에 따른 색상 클래스를 반환하는 함수
+  const getSlotColorClass = (slotIndex: number, myStatus: string | null) => {
+    // 참여하지 않은 일정은 회색으로 표시
+    if (!myStatus) {
+      return 'scheduleSlotGray';
+    }
+    
+    // 참여 중인 일정은 기존 슬롯별 색상
+    if (slotIndex <= 9) {
+      return `scheduleSlot${slotIndex}`;
+    }
+    return 'scheduleSlotDefault';
   };
 
   if (loading) {
@@ -324,54 +502,101 @@ const SchedulePage = () => {
 
               {/* 일정 그리드 */}
               <div className={styles.scheduleGrid}>
-                {getSchedulesByDay().map((day, dayIndex) => (
-                  <div key={dayIndex} className={styles.dayColumn}>
-                    {timeSlots.map((_, timeIndex) => {
-                      const timeSlot = timeIndex;
-                      const schedulesAtTime = getSchedulesAtTime(day.schedules, timeSlot);
-                      
-                      return (
-                        <div key={timeIndex} className={styles.timeSlot}>
-                          {schedulesAtTime.map((schedule: Schedule, scheduleIndex: number) => {
-                            const startTime = getTimePosition(schedule.when);
-                            const height = getScheduleHeight(schedule);
-                            const top = Math.max(0, (startTime - timeSlot) * 30); // 30px per 30min
-                            const scheduleHeight = height * 60; // 1시간 = 60px (30px * 2)
-                            
-                            // 겹치는 일정들의 가로 배치 계산
-                            const totalSchedules = schedulesAtTime.length;
-                            const scheduleWidth = totalSchedules > 1 ? `calc(100% / ${totalSchedules} - 4px)` : '100%';
-                            const leftPosition = totalSchedules > 1 ? `calc(${scheduleIndex} * (100% / ${totalSchedules}) + 2px)` : '0';
-                            
-                            return (
-                              <div
-                                key={schedule.scheduleId}
-                                className={`${styles.scheduleBlock} ${
-                                  schedulesAtTime.length > 1 ? styles.overlapping : ''
-                                }`}
-                                style={{
-                                  top: `${top}px`,
-                                  height: `${scheduleHeight}px`,
-                                  width: scheduleWidth,
-                                  left: leftPosition,
-                                  zIndex: scheduleIndex + 1
-                                }}
-                                onClick={() => handleScheduleClick(schedule.scheduleId)}
-                              >
-                                <div className={styles.scheduleTitle}>
-                                  {schedule.scheduleName}
+                {getSchedulesByDay().map((day, dayIndex) => {
+                  // 해당 날짜의 슬롯 배치 정보 미리 계산
+                  const { slotAssignment, maxSlots } = calculateScheduleSlots(day.schedules, day.date);
+                  
+                  return (
+                    <div key={dayIndex} className={styles.dayColumn}>
+                      {timeSlots.map((_, timeIndex) => {
+                        const timeSlot = timeIndex;
+                        const schedulesAtTime = getSchedulesAtTime(day.schedules, timeSlot, day.date);
+                        
+                        return (
+                          <div key={timeIndex} className={styles.timeSlot}>
+                            {schedulesAtTime.map((schedule: Schedule, scheduleIndex: number) => {
+                              const scheduleStart = new Date(schedule.when);
+                              const scheduleEnd = schedule.until ? new Date(schedule.until) : new Date(scheduleStart.getTime() + 60 * 60 * 1000);
+                              
+                              // 해당 날짜에서의 시작 시간과 높이 계산
+                              const dayStart = new Date(day.date);
+                              dayStart.setHours(0, 0, 0, 0);
+                              const dayEnd = new Date(dayStart);
+                              dayEnd.setDate(dayStart.getDate() + 1);
+                              
+                              let displayStartTime;
+                              let displayHeight;
+                              
+                              if (scheduleStart < dayStart) {
+                                // 일정이 전날에 시작된 경우, 해당 날짜의 00:00부터 표시
+                                displayStartTime = 0;
+                                const effectiveEnd = scheduleEnd < dayEnd ? scheduleEnd : dayEnd;
+                                displayHeight = (effectiveEnd.getTime() - dayStart.getTime()) / (1000 * 60 * 60);
+                              } else {
+                                // 일정이 해당 날짜에 시작된 경우, 실제 시작 시간 사용
+                                displayStartTime = getTimeSlotIndex(schedule.when);
+                                
+                                if (scheduleEnd >= dayEnd) {
+                                  // 일정이 다음날로 넘어가는 경우, 해당 날의 마지막까지 높이 계산
+                                  displayHeight = (dayEnd.getTime() - scheduleStart.getTime()) / (1000 * 60 * 60);
+                                } else {
+                                  // 일정이 해당 날에 끝나는 경우
+                                  displayHeight = (scheduleEnd.getTime() - scheduleStart.getTime()) / (1000 * 60 * 60);
+                                }
+                              }
+                              
+                              // 일정이 해당 시간 슬롯에서 시작하는지 확인
+                              const isStartingAtThisSlot = Math.floor(displayStartTime) === timeSlot;
+                              
+                              // 시작하는 슬롯에서만 렌더링
+                              if (!isStartingAtThisSlot) {
+                                return null;
+                              }
+                              
+                              const top = Math.max(0, (displayStartTime - timeSlot) * 30); // 30px per 30min
+                              const scheduleHeight = Math.max(30, displayHeight * 60); // 최소 30px, 1시간 = 60px
+                              
+                              // 새로운 너비 및 위치 계산
+                              const assignedSlot = slotAssignment.get(schedule.scheduleId) || 0;
+                              const scheduleWidth = maxSlots > 1 ? `calc(100% / ${maxSlots} - 4px)` : '100%';
+                              const leftPosition = maxSlots > 1 ? `calc(${assignedSlot} * (100% / ${maxSlots}) + 2px)` : '0';
+                              
+                              // 슬롯별 색상 클래스
+                              const colorClass = getSlotColorClass(assignedSlot, schedule.myStatus);
+                              
+                              // 미정 상태인 경우 반짝이는 효과 추가
+                              const blinkClass = schedule.myStatus === '미정' ? styles.blinking : '';
+                              
+                              console.log(`Rendering schedule "${schedule.scheduleName}" - Slot: ${assignedSlot}/${maxSlots}, Color: ${colorClass}, MyStatus: ${schedule.myStatus}, Width: ${scheduleWidth}, Left: ${leftPosition}`);
+                              
+                              return (
+                                <div
+                                  key={schedule.scheduleId}
+                                  className={`${styles.scheduleBlock} ${styles[colorClass]} ${blinkClass}`}
+                                  style={{
+                                    top: `${top}px`,
+                                    height: `${scheduleHeight}px`,
+                                    width: scheduleWidth,
+                                    left: leftPosition,
+                                    zIndex: scheduleIndex + 1
+                                  }}
+                                  onClick={() => handleScheduleClick(schedule.scheduleId)}
+                                >
+                                  <div className={styles.scheduleTitle}>
+                                    {schedule.scheduleName}
+                                  </div>
+                                  <div className={styles.scheduleParticipants}>
+                                    {getParticipantNames(schedule)}
+                                  </div>
                                 </div>
-                                <div className={styles.scheduleParticipants}>
-                                  {getParticipantNames(schedule)}
-                                </div>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      );
-                    })}
-                  </div>
-                ))}
+                              );
+                            })}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  );
+                })}
               </div>
             </div>
           </div>

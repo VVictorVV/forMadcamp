@@ -6,6 +6,8 @@ import { useAuth } from '../../../context/AuthContext';
 import { supabase } from '../../../lib/supabaseClient';
 import styles from './scheduleDetail.module.css';
 import Image from 'next/image';
+import TimeSelector from '../../../components/TimeSelector';
+import RelatedPolls from '../../../components/RelatedPolls';
 
 interface Participant {
   id: string;
@@ -20,6 +22,7 @@ interface ScheduleDetail {
   when: string;
   until?: string;
   description: string;
+  relatedPollId?: number;
   participants: Array<{
     userId: number;
     name: string;
@@ -46,6 +49,12 @@ const ScheduleDetailPage = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isCreator, setIsCreator] = useState(false);
+  const [myStatus, setMyStatus] = useState<string | null>(null);
+  const [updatingStatus, setUpdatingStatus] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [selectedPollId, setSelectedPollId] = useState<number | null>(null);
 
   // 일정 데이터 불러오기
   useEffect(() => {
@@ -71,24 +80,63 @@ const ScheduleDetailPage = () => {
         const data = await response.json();
         setSchedule(data);
 
-        // 폼 데이터 설정
+        // 폼 데이터 설정 (한국 시간 처리)
         const startDateTime = new Date(data.when);
         const endDateTime = data.until ? new Date(data.until) : new Date(startDateTime.getTime() + 60 * 60 * 1000);
         
+        // 디버깅 정보
+        console.log('Schedule detail - Original when:', data.when);
+        console.log('Schedule detail - Parsed start:', startDateTime.toISOString());
+        
+        // 한국 시간으로 변환 (UTC+9)
+        const koreaOffset = 9 * 60; // 9시간을 분으로 변환
+        const koreaStartTime = new Date(startDateTime.getTime() + koreaOffset * 60 * 1000);
+        const koreaEndTime = new Date(endDateTime.getTime() + koreaOffset * 60 * 1000);
+        
+        console.log('Schedule detail - Korea start hours:', koreaStartTime.getUTCHours(), 'minutes:', koreaStartTime.getUTCMinutes());
+        
         setScheduleName(data.scheduleName);
         setDescription(data.description);
-        setStartDate(startDateTime.toISOString().split('T')[0]);
-        setStartTime(startDateTime.toTimeString().slice(0, 5));
-        setEndDate(endDateTime.toISOString().split('T')[0]);
-        setEndTime(endDateTime.toTimeString().slice(0, 5));
+        setSelectedPollId(data.relatedPollId || null);
+        
+        // 한국 시간 기준으로 날짜와 시간 설정 (30분 단위로 반올림)
+        const startYear = koreaStartTime.getUTCFullYear();
+        const startMonth = (koreaStartTime.getUTCMonth() + 1).toString().padStart(2, '0');
+        const startDay = koreaStartTime.getUTCDate().toString().padStart(2, '0');
+        setStartDate(`${startYear}-${startMonth}-${startDay}`);
+        
+        // 30분 단위로 반올림
+        const startMinutes = koreaStartTime.getUTCMinutes();
+        const roundedStartMinutes = startMinutes >= 30 ? 30 : 0;
+        setStartTime(`${koreaStartTime.getUTCHours().toString().padStart(2, '0')}:${roundedStartMinutes.toString().padStart(2, '0')}`);
+        
+        const endYear = koreaEndTime.getUTCFullYear();
+        const endMonth = (koreaEndTime.getUTCMonth() + 1).toString().padStart(2, '0');
+        const endDay = koreaEndTime.getUTCDate().toString().padStart(2, '0');
+        setEndDate(`${endYear}-${endMonth}-${endDay}`);
+        
+        // 30분 단위로 반올림
+        const endMinutes = koreaEndTime.getUTCMinutes();
+        const roundedEndMinutes = endMinutes >= 30 ? 30 : 0;
+        setEndTime(`${koreaEndTime.getUTCHours().toString().padStart(2, '0')}:${roundedEndMinutes.toString().padStart(2, '0')}`);
 
-        // 참여자 데이터 설정
+        // 참여자 데이터 설정 및 현재 사용자 정보 확인
         const participantData = data.participants.map((p: { userId: number; name: string; role: string; status: string }) => ({
           id: p.userId.toString(),
           name: p.name,
           role: p.role
         }));
         setParticipants(participantData);
+
+        // 현재 사용자의 역할과 상태 확인
+        const currentUserParticipant = data.participants.find((p: { userId: number; name: string; role: string; status: string }) => p.userId.toString() === user?.id);
+        if (currentUserParticipant) {
+          setIsCreator(currentUserParticipant.role === '주최자');
+          setMyStatus(currentUserParticipant.status);
+        } else {
+          setIsCreator(false);
+          setMyStatus(null);
+        }
 
       } catch (error) {
         console.error('Error fetching schedule:', error);
@@ -101,7 +149,7 @@ const ScheduleDetailPage = () => {
     if (scheduleId) {
       fetchScheduleDetail();
     }
-  }, [scheduleId]);
+  }, [scheduleId, user?.id]); // user?.id로 수정
 
   const handleSubmit = async () => {
     // 유효성 검사
@@ -120,9 +168,11 @@ const ScheduleDetailPage = () => {
       return;
     }
 
-    // 시작 시간과 종료 시간 비교
-    const startDateTime = new Date(`${startDate}T${startTime}`);
-    const endDateTime = new Date(`${endDate}T${endTime}`);
+    // 시작 시간과 종료 시간 비교 (한국 시간대로 처리)
+    const startDateTime = new Date(`${startDate}T${startTime}:00`);
+    const endDateTime = new Date(`${endDate}T${endTime}:00`);
+    
+    console.log('Form submission - Start:', startDateTime.toISOString(), 'End:', endDateTime.toISOString());
     
     if (endDateTime <= startDateTime) {
       setError('종료 시간은 시작 시간보다 늦어야 합니다.');
@@ -149,7 +199,8 @@ const ScheduleDetailPage = () => {
           scheduleName: scheduleName.trim(),
           description: description.trim(),
           when: startDateTime.toISOString(),
-          until: endDateTime.toISOString()
+          until: endDateTime.toISOString(),
+          relatedPollId: selectedPollId
         })
       });
 
@@ -178,6 +229,99 @@ const ScheduleDetailPage = () => {
       setError(err instanceof Error ? err.message : '일정 수정에 실패했습니다.');
     } finally {
       setSaving(false);
+    }
+  };
+
+  // 참여 상태 변경 함수
+  const handleParticipationStatus = async (status: '참석' | '불참' | '미정') => {
+    try {
+      setUpdatingStatus(true);
+      setError(null);
+
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) {
+        setError('인증 토큰이 없습니다.');
+        return;
+      }
+
+      const response = await fetch(`/api/schedules/${scheduleId}/participants/me`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
+        },
+        body: JSON.stringify({ status })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || '참여 상태 변경에 실패했습니다.');
+      }
+
+      // 상태 업데이트
+      setMyStatus(status);
+      
+      // 일정 데이터 다시 불러오기
+      const updatedResponse = await fetch(`/api/schedules/${scheduleId}`, {
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`
+        }
+      });
+      
+      if (updatedResponse.ok) {
+        const updatedData = await updatedResponse.json();
+        setSchedule(updatedData);
+        
+        // 참여자 데이터 업데이트
+        const updatedParticipantData = updatedData.participants.map((p: { userId: number; name: string; role: string; status: string }) => ({
+          id: p.userId.toString(),
+          name: p.name,
+          role: p.role
+        }));
+        setParticipants(updatedParticipantData);
+      }
+
+    } catch (err) {
+      console.error('Error updating participation status:', err);
+      setError(err instanceof Error ? err.message : '참여 상태 변경에 실패했습니다.');
+    } finally {
+      setUpdatingStatus(false);
+    }
+  };
+
+  // 일정 삭제 함수
+  const handleDeleteSchedule = async () => {
+    try {
+      setDeleting(true);
+      setError(null);
+
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) {
+        setError('인증 토큰이 없습니다.');
+        return;
+      }
+
+      const response = await fetch(`/api/schedules/${scheduleId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`
+        }
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || '일정 삭제에 실패했습니다.');
+      }
+
+      // 성공 시 일정 목록으로 이동
+      router.push('/schedule');
+
+    } catch (err) {
+      console.error('Error deleting schedule:', err);
+      setError(err instanceof Error ? err.message : '일정 삭제에 실패했습니다.');
+    } finally {
+      setDeleting(false);
+      setShowDeleteModal(false);
     }
   };
 
@@ -237,12 +381,25 @@ const ScheduleDetailPage = () => {
 
       {/* 제목 섹션 */}
       <div className={styles.titleSection}>
-        <h1 className={styles.pageTitle}>
-          {isEditing ? '일정 수정하기' : '일정 상세보기'}
-        </h1>
-        <p className={styles.pageDescription}>
-          {isEditing ? '일정 정보를 수정하고 저장하세요' : '일정의 상세 정보를 확인하세요'}
-        </p>
+        <div className={styles.titleHeader}>
+          <div className={styles.titleContent}>
+            <h1 className={styles.pageTitle}>
+              {isEditing ? '일정 수정하기' : '일정 상세보기'}
+            </h1>
+            <p className={styles.pageDescription}>
+              {isEditing ? '일정 정보를 수정하고 저장하세요' : '일정의 상세 정보를 확인하세요'}
+            </p>
+          </div>
+          {isCreator && (
+            <button
+              onClick={() => setShowDeleteModal(true)}
+              className={styles.deleteButton}
+              title="일정 삭제"
+            >
+              삭제하기
+            </button>
+          )}
+        </div>
       </div>
 
       <main className={styles.main}>
@@ -291,11 +448,9 @@ const ScheduleDetailPage = () => {
                       className={styles.dateInput}
                       disabled={!isEditing}
                     />
-                    <input
-                      type="time"
+                    <TimeSelector
                       value={startTime}
-                      onChange={(e) => setStartTime(e.target.value)}
-                      className={styles.timeInput}
+                      onChange={setStartTime}
                       disabled={!isEditing}
                     />
                   </div>
@@ -310,15 +465,26 @@ const ScheduleDetailPage = () => {
                       className={styles.dateInput}
                       disabled={!isEditing}
                     />
-                    <input
-                      type="time"
+                    <TimeSelector
                       value={endTime}
-                      onChange={(e) => setEndTime(e.target.value)}
-                      className={styles.timeInput}
+                      onChange={setEndTime}
                       disabled={!isEditing}
                     />
                   </div>
                 </div>
+              </div>
+            </div>
+
+            {/* 연관 투표 섹션 */}
+            <div className={styles.formSection}>
+              <label className={styles.label}>연관 투표</label>
+              <div className={styles.relatedPollsContainer}>
+                <RelatedPolls
+                  scheduleId={schedule?.scheduleId}
+                  relatedPollId={selectedPollId || undefined}
+                  onPollSelect={isEditing ? setSelectedPollId : undefined}
+                  readonly={!isEditing}
+                />
               </div>
             </div>
           </div>
@@ -342,32 +508,68 @@ const ScheduleDetailPage = () => {
               </div>
             </div>
 
-            {/* 수정/저장 버튼 */}
+            {/* 수정/저장 버튼 또는 참여/불참 버튼 */}
             <div className={styles.actionSection}>
-              {isEditing ? (
-                <div className={styles.editActions}>
+              {isCreator ? (
+                // 주최자인 경우 - 기존 수정/저장 버튼
+                isEditing ? (
+                  <div className={styles.editActions}>
+                    <button
+                      onClick={() => setIsEditing(false)}
+                      className={styles.cancelButton}
+                      disabled={saving}
+                    >
+                      취소
+                    </button>
+                    <button
+                      onClick={handleSubmit}
+                      disabled={!isFormValid() || saving}
+                      className={`${styles.saveButton} ${!isFormValid() ? styles.disabled : ''}`}
+                    >
+                      {saving ? '저장 중...' : '저장하기'}
+                    </button>
+                  </div>
+                ) : (
                   <button
-                    onClick={() => setIsEditing(false)}
-                    className={styles.cancelButton}
-                    disabled={saving}
+                    onClick={() => setIsEditing(true)}
+                    className={styles.editButton}
                   >
-                    취소
+                    수정하기
                   </button>
-                  <button
-                    onClick={handleSubmit}
-                    disabled={!isFormValid() || saving}
-                    className={`${styles.saveButton} ${!isFormValid() ? styles.disabled : ''}`}
-                  >
-                    {saving ? '저장 중...' : '저장하기'}
-                  </button>
-                </div>
+                )
               ) : (
-                <button
-                  onClick={() => setIsEditing(true)}
-                  className={styles.editButton}
-                >
-                  수정하기
-                </button>
+                // 주최자가 아닌 경우 - 참여/불참 버튼
+                <div className={styles.participationActions}>
+                  <div className={styles.statusInfo}>
+                    <span className={styles.statusLabel}>참여 상태:</span>
+                    <span className={`${styles.statusValue} ${styles[`status${myStatus?.replace(/\s/g, '') || 'None'}`]}`}>
+                      {myStatus || '미참여'}
+                    </span>
+                  </div>
+                  <div className={styles.participationButtons}>
+                    <button
+                      onClick={() => handleParticipationStatus('참석')}
+                      disabled={updatingStatus}
+                      className={`${styles.participationButton} ${styles.attendButton} ${myStatus === '참석' ? styles.active : ''}`}
+                    >
+                      {updatingStatus && myStatus !== '참석' ? '처리 중...' : '참여'}
+                    </button>
+                    <button
+                      onClick={() => handleParticipationStatus('불참')}
+                      disabled={updatingStatus}
+                      className={`${styles.participationButton} ${styles.absentButton} ${myStatus === '불참' ? styles.active : ''}`}
+                    >
+                      {updatingStatus && myStatus !== '불참' ? '처리 중...' : '불참'}
+                    </button>
+                    <button
+                      onClick={() => handleParticipationStatus('미정')}
+                      disabled={updatingStatus}
+                      className={`${styles.participationButton} ${styles.pendingButton} ${myStatus === '미정' ? styles.active : ''}`}
+                    >
+                      {updatingStatus && myStatus !== '미정' ? '처리 중...' : '미정'}
+                    </button>
+                  </div>
+                </div>
               )}
             </div>
           </div>
@@ -380,6 +582,49 @@ const ScheduleDetailPage = () => {
           </div>
         )}
       </main>
+
+      {/* 삭제 확인 모달 */}
+      {showDeleteModal && (
+        <div className={styles.modalOverlay} onClick={() => setShowDeleteModal(false)}>
+          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.modalHeader}>
+              <h3 className={styles.modalTitle}>일정 삭제</h3>
+              <button 
+                className={styles.modalCloseButton}
+                onClick={() => setShowDeleteModal(false)}
+              >
+                ×
+              </button>
+            </div>
+            
+            <div className={styles.modalBody}>
+              <p className={styles.modalDescription}>
+                정말로 이 일정을 삭제하시겠습니까?
+              </p>
+              <p className={styles.modalWarning}>
+                삭제된 일정은 복구할 수 없으며, 모든 참여자 정보도 함께 삭제됩니다.
+              </p>
+            </div>
+            
+            <div className={styles.modalFooter}>
+              <button 
+                className={styles.modalCancelButton}
+                onClick={() => setShowDeleteModal(false)}
+                disabled={deleting}
+              >
+                취소
+              </button>
+              <button 
+                className={styles.modalDeleteButton}
+                onClick={handleDeleteSchedule}
+                disabled={deleting}
+              >
+                {deleting ? '삭제 중...' : '삭제하기'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
