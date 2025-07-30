@@ -16,21 +16,34 @@
 
 .bannerArea {
   position: relative;
+  margin-left: auto;  /* Center the banner */
+  margin-right: auto; /* Center the banner */
   margin-bottom: 2rem;
-  height: 400px; /* Or any desired height */
+  width: 90%; /* Reduce the width to make it smaller */
+  height: auto; /* Height will be determined by aspect-ratio */
+  aspect-ratio: 16 / 9; /* The magic property for 16:9 ratio */
   border-radius: 16px; /* Rounded corners for the whole frame */
   overflow: hidden;    /* This is key to contain all elements */
   background-color: #e9eef3; /* Default background for when there's no image */
 }
 
-.scoopOverlay {
+/* This is no longer an overlay, but a specific corner element */
+.cornerElement {
+  position: absolute;
+  top: 58;
+  left: 0; /* Changed from right: 0 */
+  width: 20px;  /* Changed size */
+  height: 20px; /* Changed size */
+  z-index: 2;
+}
+
+.cornerElementTopRight {
   position: absolute;
   top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  /* left property is now controlled by inline style */
+  width: 20px;
+  height: 20px;
   z-index: 2;
-  pointer-events: none; /* Allows clicks to go through to the image below */
 }
 
 .titleHeader {
@@ -38,14 +51,38 @@
   top: 0;
   left: 0;
   background-color: white;
-  padding: 0.5rem 1.5rem; /* Shorter vertical padding */
-  z-index: 3; /* Ensure title is on top of the scoop overlay */
+  z-index: 3;
   border-bottom-right-radius: 20px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
   font-weight: 700;
-  font-size: 1.75rem; /* Adjusted font size */
   color: #1a202c;
   max-width: 70%;
+  /* Remove padding from here to apply it to children */
+}
+
+.titleText {
+  padding: 0.5rem 1.5rem;
+  font-size: 1.75rem;
+  white-space: nowrap; /* Prevent wrapping */
+}
+
+.titleInput {
+  width: 100%;
+  padding: 0.5rem 1.5rem;
+  font-size: 1.75rem;
+  font-weight: 700;
+  border: 1px solid #cbd5e0; /* Add a subtle border for editing */
+  border-radius: 12px; /* Match the visual rounding of the container */
+  outline: none;
+  background-color: #f7fafc;
+  font-family: inherit;
+  box-sizing: border-box; /* Ensures padding is included in the width */
+  -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+}
+
+.titleInput::placeholder {
+  color: #a0aec0;
 }
 
 .bannerContent {
@@ -100,7 +137,7 @@
 .sidebar {
     border-left: 1px solid #e2e8f0;
     padding-left: 2rem;
-    position: relative; 
+    position: relative;
 }
 
 .sidebar h3 {
@@ -158,10 +195,10 @@
   background-color: #006D94; /* Primary color */
   color: white;
   border: none;
-  padding: 0.4rem 0.8rem; 
+  padding: 0.4rem 0.8rem;
   border-radius: 0.5rem;
   cursor: pointer;
-  font-weight: 600; 
+  font-weight: 600;
   transition: background-color 0.2s;
 }
 
@@ -172,21 +209,6 @@
 
 .saveButton:hover {
   background-color: #005c7a;
-}
-
-.titleInput {
-  width: 100%;
-  padding: 0.5rem;
-  font-size: 2.25rem;
-  font-weight: 700; /* Bold */
-  border: 2px solid #cbd5e0;
-  border-radius: 0.5rem;
-  outline: none;
-  background-color: #f7fafc; /* Light background for input */
-  font-family: inherit; /* Ensure it inherits AstaSans */
-}
-.titleInput:focus {
-  border-color: #4299e1;
 }
 
 .textarea {

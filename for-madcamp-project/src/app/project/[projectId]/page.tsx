@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback, ChangeEvent, useRef } from 'react';
+import React, { useState, useEffect, useCallback, ChangeEvent, useRef, useLayoutEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { supabase } from '../../../../lib/supabaseClient';
 import styles from './projectDetail.module.css';
@@ -43,7 +43,26 @@ const ProjectDetailPage = () => {
   const [newImageFile, setNewImageFile] = useState<File | null>(null);
   const [openLightbox, setOpenLightbox] = useState(false);
 
-  // The complex useLayoutEffect for clip-path is now removed.
+  const titleRef = useRef<HTMLDivElement>(null);
+  const [topRightCornerStyle, setTopRightCornerStyle] = useState({});
+
+  useLayoutEffect(() => {
+    const calculatePosition = () => {
+      if (titleRef.current) {
+        const titleWidth = titleRef.current.offsetWidth;
+        setTopRightCornerStyle({ left: `${titleWidth}px` });
+      }
+    };
+
+    calculatePosition();
+    
+    const observer = new ResizeObserver(calculatePosition);
+    if (titleRef.current) {
+      observer.observe(titleRef.current);
+    }
+    
+    return () => observer.disconnect();
+  }, [project, isEditMode]); // Recalculate when title text or edit mode changes
 
   const handleEditToggle = () => {
     if (isEditMode) {
@@ -284,15 +303,23 @@ const ProjectDetailPage = () => {
                      </div>
                 )}
             </div>
-            {/* The ScoopedCorner is now an overlay */}
-            <div className={styles.scoopOverlay}>
+            {/* The titleHeader is now placed after the banner content and corner element */}
+            <div className={styles.cornerElement}>
                 <ScoopedCorner 
-                    size={80} 
-                    color="rgba(255, 255, 255, 0.5)" // Semi-transparent white
-                    backgroundColor="transparent"
+                    size={20} 
+                    color="#FFFFFF" // Explicitly set to opaque white
+                    // corner prop is removed to use default 'bottom-right'
                 />
             </div>
-            <div className={styles.titleHeader}>
+            {/* Add another corner element */}
+            <div className={styles.cornerElementTopRight} style={topRightCornerStyle}>
+                <ScoopedCorner 
+                    size={20} 
+                    color="#FFFFFF"
+                    // corner prop is removed to use default 'bottom-right'
+                />
+            </div>
+            <div className={styles.titleHeader} ref={titleRef}>
                 {isEditMode ? (
                     <input
                         type="text"
