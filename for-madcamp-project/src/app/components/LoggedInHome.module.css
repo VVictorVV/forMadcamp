@@ -1,6 +1,6 @@
 .pageWrapper {
     height: 93.5vh; /* Use fixed viewport height */
-    background: linear-gradient(45deg, #000000, #d9d9d9);
+    background: linear-gradient(45deg, #011b4b, #006D94);
     background-attachment: fixed;
     display: flex;
     align-items: center;
@@ -140,6 +140,29 @@
     padding: 1rem;
 }
 
+.forClass2Container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    box-sizing: border-box;
+    text-align: center;
+}
+
+.forClass2Container h3 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+}
+
+.forClass2Container p {
+    font-size: 1.2rem;
+    color: rgba(255, 255, 255, 0.8);
+}
+
 .youMightLike {
     grid-area: likes;
     padding: 0.5rem;
@@ -175,65 +198,29 @@
 
 .likeItem .projectInfo {
     position: absolute;
-    bottom: 0;
+    top: 0;
     left: 0;
-    right: 0;
-    padding: 0.75rem; /* Adjusted padding */
-    background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 100%);
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
     color: white;
-    transform: translateY(100%);
-    transition: transform 0.3s ease, opacity 0.3s ease; /* Added opacity transition */
-    opacity: 0;
-    text-align: center; /* Center text */
-    font-size: 0.9rem; /* Adjusted font size */
-    white-space: nowrap; /* Prevent text wrapping */
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.likeItem:hover .projectInfo {
-    transform: translateY(0);
-    opacity: 1;
-}
-
-.likeItem .noImagePlaceholder {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 100%;
-    height: 100%;
-    color: white;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    padding: 0.5rem; /* Add padding for text */
+}
+
+.likeItem:hover .projectInfo {
+    opacity: 1;
+}
+
+.likeItem .projectInfo span {
+    font-size: 1.2rem;
     font-weight: 600;
-}
-
-.likeItem .projectInfo {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    padding: 1rem;
-    background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0) 100%);
-    color: white;
-    transform: translateY(100%);
-    transition: transform 0.3s ease;
-    opacity: 0;
-}
-
-.likeItem:hover .projectInfo {
-    transform: translateY(0);
-    opacity: 1;
-}
-
-.noImagePlaceholder {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: rgba(0,0,0,0.3);
-    color: white;
     text-align: center;
-    font-size: 0.9rem;
+    white-space: normal; /* Allow text to wrap if needed */
 }
 .noProjectPlaceholder {
     width: 100%;

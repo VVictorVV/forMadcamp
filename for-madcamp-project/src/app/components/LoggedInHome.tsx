@@ -29,6 +29,7 @@ export default function LoggedInHome() {
   const [recentProject, setRecentProject] = useState<Project | null>(null);
   const [upcomingPolls, setUpcomingPolls] = useState<Poll[]>([]);
   const [otherProjects, setOtherProjects] = useState<Project[]>([]);
+  const [userName, setUserName] = useState<string | null>(null);
 
   useEffect(() => {
     if (!user) return;
@@ -36,16 +37,19 @@ export default function LoggedInHome() {
     const fetchData = async () => {
       console.log("--- Starting data fetch for user:", user.id);
 
-      // --- Fetch User's Class ID ---
+      // --- Fetch User's Class ID and Name ---
       const { data: profile, error: profileError } = await supabase
         .from('PROFILES')
-        .select('class_id')
+        .select('class_id, name')
         .eq('id', user.id)
         .single();
       
       if (profileError) console.error("Error fetching profile:", profileError);
       console.log("Fetched profile data:", profile);
       const classId = profile?.class_id;
+      if (profile) {
+        setUserName(profile.name);
+      }
 
       // --- Fetch Recent Project ---
       const { data: participatorData, error: participatorError } = await supabase
@@ -63,7 +67,7 @@ export default function LoggedInHome() {
           .from('PROJECTS')
           .select('project_id, project_name, representative_image_uri')
           .in('project_id', userProjectIds)
-          .order('created_at', { ascending: false })
+          .order('week_num', { ascending: false })
           .limit(1)
           .single();
         if(projectError) console.error("Error fetching recent project:", projectError);
@@ -120,7 +124,12 @@ export default function LoggedInHome() {
 
         {/* Grid Cell 2: Recent Project */}
         <div className={styles.recentProject}>
-          {recentProject ? (
+          {userName === '허지민' ? (
+            <Link href="/class/2" className={styles.forClass2Container}>
+              <h3>For 2분반</h3>
+              <p>2분반 여러분, 응원합니다!</p>
+            </Link>
+          ) : recentProject ? (
             <Link href={`/project/${recentProject.project_id}`}>
               <div className={styles.imageOverlay}>
                 <h3>Recent Projects</h3>

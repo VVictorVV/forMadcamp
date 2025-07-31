@@ -1,0 +1,18 @@
+.pageWrapper {
+    width: 100vw;
+    height: 100vh;
+    background-color: #000000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+}
+
+.ipodContainer {
+    /* Container for the image, can be used for additional styling if needed */
+}
+
+.ipodImage {
+    max-width: 90vw; /* Ensure image is responsive on smaller screens */
+    height: auto;   /* Maintain aspect ratio */
+} 
