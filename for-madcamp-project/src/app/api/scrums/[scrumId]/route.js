@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '../../../../../lib/supabaseClient';
+import { calculateProjectProgress } from '../../../../lib/progressCalculator';
 
 // PUT /api/scrums/{scrumId}
 export async function PUT(req, { params }) {
@@ -109,7 +110,20 @@ export async function PUT(req, { params }) {
       );
     }
 
-    // 8. 업데이트된 스크럼의 상세 정보 조회
+    // 8. 스크럼 수정 후 진행도 자동 계산 (동기적으로 처리)
+    let progressResult = null;
+    try {
+      progressResult = await calculateProjectProgress(scrum.project_id);
+      if (!progressResult.success) {
+        console.error('Progress calculation failed:', progressResult.error);
+      } else {
+        console.log(`Project ${scrum.project_id} progress updated to ${progressResult.progress}%`);
+      }
+    } catch (err) {
+      console.error('Progress calculation error:', err);
+    }
+
+    // 9. 업데이트된 스크럼의 상세 정보 조회
     const { data: scrumDetails, error: detailsError } = await supabase
       .from('SCRUMS')
       .select(`
@@ -131,14 +145,17 @@ export async function PUT(req, { params }) {
       );
     }
 
-    // 9. 응답 데이터 구성
+    // 10. 응답 데이터 구성 (진행도 정보 포함)
     const responseData = {
       scrumId: scrumDetails.scrum_id,
       projectId: scrumDetails.project_id,
       date: scrumDetails.date,
       done: scrumDetails.done,
       plan: scrumDetails.plan,
-      others: scrumDetails.others
+      others: scrumDetails.others,
+      progressUpdateTriggered: true,
+      updatedProgress: progressResult?.progress || null,
+      progressCalculationSuccess: progressResult?.success || false
     };
 
     return NextResponse.json(responseData, { status: 200 });

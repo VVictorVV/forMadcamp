@@ -67,8 +67,8 @@ const AuthPage = () => {
         
         setSuccessMessage('Signup successful! Please check your email to verify your account.');
         setIsLoginView(true);
-      } catch (err: any) {
-        setError(err.message);
+      } catch (err: unknown) {
+        setError(err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다.');
       }
     }
   };
@@ -88,11 +88,11 @@ const AuthPage = () => {
           {isLoginView ? (
             <div className={`${styles.card} ${styles.loginCard}`}>
               <div className={styles.cardHeader}>
-                <span className={styles.brand}>Madcamp</span>
-                <a href="#" onClick={toggleView} className={styles.link}>Sign up</a>
+                <span className={styles.brand}>몰입캠프</span>
+                <a href="#" onClick={toggleView} className={styles.link}>회원가입</a>
               </div>
               <div className={styles.titleContainer}>
-                <h1 className={styles.title}>Log in</h1>
+                <h1 className={styles.title}>로그인</h1>
                 <button form="loginForm" type="submit" className={styles.submitButton}>
                   <span className={styles.arrow}>&gt;</span>
                 </button>
@@ -114,10 +114,10 @@ const AuthPage = () => {
           ) : (
             <div className={`${styles.card} ${styles.signupCard}`}>
               <div className={styles.cardHeader}>
-                <span className={styles.brand}>Madcamp</span>
-                <a href="#" onClick={toggleView} className={styles.link}>Log in</a>
+                <span className={styles.brand}>몰입캠프</span>
+                <a href="#" onClick={toggleView} className={styles.link}>로그인</a>
               </div>
-              <h1 className={styles.title}>Sign up</h1>
+              <h1 className={styles.title}>회원가입</h1>
               {error && <p className={styles.error}>{error}</p>}
               <form onSubmit={handleAuthAction} className={styles.form}>
                 <div className={styles.inputGroup}>
@@ -169,21 +169,21 @@ const AuthPage = () => {
           <div className={`${styles.card} ${styles.featureCard}`}>
              {/* This part remains the same as auth-preview */}
              <div className={styles.featureHeader}>
-              <span>All-in-One Madcamp</span>
+              <span>All-in-One 몰입캠프</span>
             </div>
             <div className={styles.featureBody}>
-                <h2 className={styles.featureTitle}>Manage.</h2>
-                <h2 className={styles.featureTitle}>Collaborate.</h2>
-                <h2 className={styles.featureTitle}>Create.</h2>
+                <h2 className={styles.featureTitle}>관리,</h2>
+                <h2 className={styles.featureTitle}>협업,</h2>
+                <h2 className={styles.featureTitle}>창작.</h2>
             </div>
             <div className={styles.featureDetails}>
-              <p>From scrum notes to final votes, all your project needs in one streamlined workspace.</p>
+              <p>스크럼 노트부터 일정 투표까지, <br></br>하나의 워크스페이스에서 모든 <br></br>프로젝트를 관리하세요.</p>
             </div>
             <div style={{ flexGrow: 1 }} />
             <div className={styles.featureFooter}>
                 <span className={styles.featureBrand}>MADCAMP</span>
                 <a href="#" className={styles.joinButton}>
-                    Learn More
+                    더보기
                 </a>
             </div>
           </div>

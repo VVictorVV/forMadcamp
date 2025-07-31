@@ -132,18 +132,20 @@ export async function POST(req, { params }) {
       );
     }
 
-    // 11. 스크럼 생성 후 진행도 자동 계산 (비동기로 처리하여 응답 지연 방지)
-    calculateProjectProgress(projectId).then(result => {
-      if (!result.success) {
-        console.error('Progress calculation failed:', result.error);
+    // 11. 스크럼 생성 후 진행도 자동 계산 (동기적으로 처리)
+    let progressResult = null;
+    try {
+      progressResult = await calculateProjectProgress(projectId);
+      if (!progressResult.success) {
+        console.error('Progress calculation failed:', progressResult.error);
       } else {
-        console.log(`Project ${projectId} progress updated to ${result.progress}%`);
+        console.log(`Project ${projectId} progress updated to ${progressResult.progress}%`);
       }
-    }).catch(err => {
+    } catch (err) {
       console.error('Progress calculation error:', err);
-    });
+    }
 
-    // 12. 응답 데이터 구성
+    // 12. 응답 데이터 구성 (진행도 정보 포함)
     const responseData = {
       scrumId: newScrum.scrum_id,
       projectId: newScrum.project_id,
@@ -151,7 +153,9 @@ export async function POST(req, { params }) {
       done: newScrum.done,
       plan: newScrum.plan,
       others: newScrum.others,
-      progressUpdateTriggered: true
+      progressUpdateTriggered: true,
+      updatedProgress: progressResult?.progress || null,
+      progressCalculationSuccess: progressResult?.success || false
     };
 
     return NextResponse.json(responseData, { status: 201 });
