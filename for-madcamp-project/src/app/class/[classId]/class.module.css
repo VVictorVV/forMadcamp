@@ -1,0 +1,181 @@
+.pageWrapper {
+    padding: 2rem 5%;
+    background-color: #f9fafb;
+}
+
+.title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: 2rem;
+    text-align: center;
+    padding-bottom: 1rem;
+}
+
+.profilesGrid {
+  display: flex;
+  overflow-x: auto;
+  gap: 2rem;
+  padding: 1rem; /* Add padding for scrollbar and aesthetics */
+  /* Custom scrollbar for webkit browsers */
+  &::-webkit-scrollbar {
+    height: 8px;
+  }
+  &::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 4px;
+  }
+  &::-webkit-scrollbar-thumb:hover {
+    background: #aaa;
+  }
+}
+
+.profileLink {
+  text-decoration: none;
+  color: inherit;
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+  display: block;
+  border-radius: 12px;
+  flex-shrink: 0; /* Prevent items from shrinking */
+  width: 150px; /* Give items a fixed width */
+}
+.profileLink:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+  cursor: pointer;
+}
+
+.profileItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  text-align: center;
+  padding: 1.5rem;
+  background-color: #ffffff;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.profileItem.selected {
+    background-color: #006D94; /* Primary color */
+    color: white;
+}
+
+.profileItem.selected .profileName {
+    color: white;
+}
+
+.profileImage {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  object-fit: cover;
+  background-color: #e0e0e0;
+  border: 3px solid #f9fafb;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
+}
+
+.profileName {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #374151;
+  transition: color 0.3s;
+}
+
+.container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 80vh;
+    font-size: 1.2rem;
+    color: #4b5563;
+}
+
+/* --- Details Section Styles --- */
+.detailsContainer {
+    margin-top: 3rem;
+    padding: 2.5rem;
+    background-color: #ffffff;
+    border-radius: 16px;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem; /* Adjust gap between vertical items */
+}
+
+.detailsTitle {
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: #111827;
+    text-align: center;
+    margin-bottom: 1rem; /* Adjust margin */
+}
+
+.awardSection {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    text-align: center;
+    margin-top: 0.5rem; /* Add some space from the trophy */
+}
+
+.awardText {
+    font-size: 1.5rem; /* Increased font size */
+    font-weight: 600; /* Made it bolder */
+    color: #343a40;
+    max-width: 100%;
+}
+
+.awardCommentText {
+    font-size: 1rem;
+    color: #6c757d;
+    max-width: 400px; /* Set a fixed max-width for better readability */
+    line-height: 1.6; /* Add line-height for better spacing */
+}
+
+.musicSection {
+    width: 100%;
+    max-width: 500px; /* Set a max-width for the music section */
+    margin-top: 2rem; /* Add space above music section */
+}
+
+.musicEmbed {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    border-radius: 12px;
+}
+
+.noMusicPlaceholder {
+    width: 100%;
+    padding: 2rem;
+    text-align: center;
+    background-color: #f9fafb;
+    border-radius: 12px;
+    color: #6c757d;
+}
+
+.addMusicButton {
+    width: 100%;
+    padding: 1rem; /* Reduced padding */
+    text-align: center;
+    background-color: #e9ecef;
+    border-radius: 12px;
+    color: #495057;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.addMusicButton:hover {
+    background-color: #006D94;
+    color: white;
+} 
