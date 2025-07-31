@@ -1,0 +1,422 @@
+/* memories.module.css */
+
+/* 사진이 좌우로 흔들리는 애니메이션 정의 */
+@keyframes sway {
+  0% {
+    transform: translateX(-50%) rotate(-2deg);
+  }
+  100% {
+    transform: translateX(-50%) rotate(2deg);
+  }
+}
+
+/* 모달 애니메이션 정의 */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes scaleUp {
+  from { transform: scale(0.9); }
+  to { transform: scale(1); }
+}
+
+@keyframes scaleDown {
+  from { transform: scale(1); }
+  to { transform: scale(0.9); }
+}
+
+
+.pageContainer {
+  width: 100%;
+  min-height: 100vh;
+  padding: 20px;
+  background-image: url('https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=2070&auto=format&fit=crop'); /* 여름 배경 이미지 */
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow-x: hidden; /* 좌우 스크롤바 방지 */
+}
+
+/* 배경을 흐리게 하기 위한 가상 요소 */
+.pageContainer::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: inherit;
+  filter: blur(8px) brightness(0.9);
+  z-index: 1;
+}
+
+.header, .galleryArea {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 1200px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  padding: 20px;
+  background-color: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(10px);
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.header h1 {
+  margin: 0;
+  color: #333;
+  font-size: 2.2rem;
+  font-weight: 700;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+}
+
+.addButton {
+  background: linear-gradient(135deg, #FF7E5F 0%, #FEB47B 100%);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(255, 126, 95, 0.4);
+}
+
+.addButton:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(255, 126, 95, 0.5);
+}
+
+.galleryArea {
+  display: flex;
+  flex-direction: column;
+  gap: 10px; /* 빨랫줄 사이의 간격 */
+  padding: 20px 0;
+  transition: opacity 0.3s ease-in-out;
+}
+
+.galleryArea.fading {
+  opacity: 0;
+}
+
+
+.clothesline {
+  position: relative;
+  width: 100%;
+  height: 400px; /* 사진이 아래로 처질 수 있도록 높이를 충분히 확보 */
+  margin: 40px 0;
+}
+
+.ropeSvg {
+  position: absolute;
+  top: 0;
+  left: -20%; /* 살짝 왼쪽으로 이동하여 왼쪽 끝에 맞춤 */
+  width: 140%; /* 전체 너비보다 약간 넓게 설정하여 양쪽 끝을 채움 */
+  height: 330px; /* SVG 뷰박스 높이에 맞춰 조절 */
+  overflow: visible;
+}
+
+/* 꼬인 밧줄 효과를 위한 두 가닥의 선 스타일 */
+.ropeStrand1, .ropeStrand2 {
+    fill: transparent;
+    stroke-width: 0.4;
+}
+
+.ropeStrand1 {
+    stroke: #8B5A2B; /* 어두운 갈색 */
+    stroke-dasharray: 5 5; /* 점선으로 만듭니다 */
+}
+
+.ropeStrand2 {
+    stroke: #D2B48C; /* 밝은 갈색 (Tan) */
+    stroke-dasharray: 5 5; /* 점선으로 만듭니다 */
+    stroke-dashoffset: 5; /* 다른 색 선과 겹치지 않도록 오프셋을 줍니다 */
+}
+
+
+.photoFrame {
+  position: absolute;
+  transform-origin: top center;
+  transition: transform 0.3s ease-in-out;
+  cursor: pointer; /* 클릭 가능하도록 커서 변경 */
+  
+  /* sway 애니메이션 적용 */
+  animation: sway 5s ease-in-out infinite alternate;
+}
+
+/* 자연스러운 느낌을 위해 자식 요소마다 다른 애니메이션 딜레이 적용 */
+.clothesline > .photoFrame:nth-child(2n) {
+  animation-duration: 4.5s;
+}
+
+.clothesline > .photoFrame:nth-child(3n) {
+  animation-duration: 5.5s;
+  animation-delay: -0.8s;
+}
+
+.clothesline > .photoFrame:nth-child(4n) {
+  animation-duration: 4s;
+  animation-delay: -0.5s;
+}
+
+.clothesline > .photoFrame:hover {
+  /* 호버 시 애니메이션을 멈추고 확대 */
+  animation-play-state: paused;
+  transform: translateX(-50%) scale(1.1) rotate(0deg);
+  z-index: 10;
+}
+
+
+.photoImageContainer {
+  background: white;
+  padding: 15px 15px 60px 15px; /* 폴라로이드 아래 여백 */
+  border-radius: 4px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  border: 1px solid #eee;
+  position: relative;
+}
+
+.photoImageContainer img {
+  width: 200px;
+  height: 200px;
+  object-fit: cover;
+  display: block;
+}
+
+.photoPin {
+    position: absolute;
+    top: 5px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 12px;
+    height: 12px;
+    background-color: #ff5e5e; /* 빨간색 집게 */
+    border-radius: 50%;
+    border: 2px solid white;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+    z-index: 5;
+}
+
+.photoCaption {
+  position: absolute;
+  bottom: 15px;
+  left: 15px;
+  right: 15px;
+  text-align: center;
+}
+
+.photoCaption p {
+  font-weight: 600;
+  color: #333;
+  margin: 0;
+  font-size: 1rem;
+}
+
+.photoCaption span {
+  font-size: 0.8rem;
+  color: #777;
+}
+
+.emptyState, .errorText, .loader {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  padding: 60px 20px;
+  background-color: rgba(255, 255, 255, 0.8);
+  border-radius: 12px;
+  color: #333;
+  width: 100%;
+  max-width: 600px;
+  margin: 40px auto;
+}
+
+/* --- 상세 보기 모달 스타일 --- */
+.modalBackdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  backdrop-filter: blur(5px);
+  animation: fadeIn 0.3s ease-out;
+}
+
+.modalBackdrop.closing {
+  animation: fadeOut 0.3s ease-in forwards;
+}
+
+.modalContent {
+  background: white;
+  padding: 40px;
+  border-radius: 12px;
+  max-width: 90vw;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+  animation: scaleUp 0.3s ease-out;
+}
+
+.modalContent.closing {
+  animation: scaleDown 0.3s ease-in forwards;
+}
+
+.closeButton {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: none;
+  border: none;
+  font-size: 2rem;
+  color: #888;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.modalImage {
+  max-width: 100%;
+  max-height: 60vh;
+  object-fit: contain;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.modalDetails {
+  text-align: center;
+}
+
+.modalDetails h2 {
+  margin-top: 0;
+  margin-bottom: 10px;
+  color: #333;
+}
+
+.modalDetails p {
+  margin: 5px 0;
+  color: #555;
+  font-size: 1rem;
+}
+
+.deleteButton {
+  margin-top: 20px;
+  background-color: #e74c3c;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.deleteButton:hover {
+  background-color: #c0392b;
+}
+
+/* --- 내비게이션 버튼 스타일 --- */
+.navButton {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  width: 70px;
+  background-color: rgba(0, 0, 0, 0.1);
+  color: rgba(255, 255, 255, 0.7);
+  border: none;
+  font-size: 3rem;
+  font-weight: 100;
+  cursor: pointer;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.navButton:hover {
+  background-color: rgba(0, 0, 0, 0.3);
+  color: white;
+}
+
+.navButton:disabled {
+  opacity: 0;
+  cursor: default;
+  pointer-events: none;
+}
+
+.navButtonLeft {
+  left: 0;
+}
+
+.navButtonRight {
+  right: 0;
+}
+
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+  .header {
+    flex-direction: column;
+    gap: 15px;
+    text-align: center;
+  }
+
+  .header h1 {
+    font-size: 1.8rem;
+  }
+  
+  .clothesline {
+    height: 200px;
+  }
+
+  .photoImageContainer img {
+    width: 150px;
+    height: 150px;
+  }
+
+  .photoImageContainer {
+    padding: 10px 10px 50px 10px;
+  }
+  
+  .photoCaption p {
+    font-size: 0.9rem;
+  }
+
+  .modalContent {
+    padding: 20px;
+  }
+
+  .modalDetails h2 {
+    font-size: 1.2rem;
+  }
+
+  .navButton {
+    width: 40px;
+    font-size: 2rem;
+  }
+}

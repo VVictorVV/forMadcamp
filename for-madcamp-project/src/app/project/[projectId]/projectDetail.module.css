@@ -134,11 +134,6 @@
   color: #2d3748;
 }
 
-.markdownContent {
-  line-height: 1.8; /* More readable line-height */
-  font-size: 1.1rem; /* Slightly larger text */
-}
-
 .sidebar {
   width: 280px;
   flex-shrink: 0;
@@ -345,3 +340,166 @@
     border-radius: 50%;
     object-fit: cover;
 } 
+
+/* ================================================================== */
+/* =============== Markdown Content Styles Start Here =============== */
+/* ================================================================== */
+
+/* 전체 마크다운 콘텐츠 영역의 기본 스타일 */
+.markdownContent {
+  line-height: 1.8;
+  font-size: 1.1rem;
+  color: #333;
+}
+
+/* 제목 (h1, h2, h3...) */
+/* # 제목 1 */
+.markdownContent h1 {
+  font-size: 2.2rem;
+  font-weight: 800;
+  padding-bottom: 0.5rem;
+  margin-top: 2rem;
+  margin-bottom: 1.5rem;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+/* ## 제목 2 */
+.markdownContent h2 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  padding-bottom: 0.5rem;
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+/* ### 제목 3 */
+.markdownContent h3 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-top: 1.8rem;
+  margin-bottom: 1rem;
+}
+
+/* #### 제목 4 */
+.markdownContent h4 {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-top: 1.5rem;
+  margin-bottom: 0.8rem;
+}
+
+/* 문단 */
+.markdownContent p {
+  margin-bottom: 1.2rem;
+}
+
+/* 링크 */
+.markdownContent a {
+  color: #006D94; /* 기존 버튼 색상과 유사하게 설정 */
+  text-decoration: none;
+  font-weight: 600;
+  transition: all 0.2s ease-in-out;
+}
+
+.markdownContent a:hover {
+  text-decoration: underline;
+  color: #005c7e;
+}
+
+/* 목록 (ul, ol) */
+.markdownContent ul,
+.markdownContent ol {
+  padding-left: 2rem;
+  margin-bottom: 1.2rem;
+}
+
+.markdownContent li {
+  margin-bottom: 0.6rem;
+}
+
+/* 인용문 */
+/* > 인용문 */
+.markdownContent blockquote {
+  margin: 1.5rem 0;
+  padding: 0.5rem 1.5rem;
+  border-left: 4px solid #e2e8f0;
+  background-color: #f7fafc;
+  color: #4a5568;
+}
+
+.markdownContent blockquote p {
+  margin-bottom: 0;
+}
+
+/* 인라인 코드 & 코드 블록 */
+/* `code` */
+.markdownContent code {
+  font-family: 'Fira Code', 'Courier New', monospace;
+  background-color: #eef2f7;
+  padding: 0.2em 0.4em;
+  font-size: 0.9em;
+  border-radius: 4px;
+}
+
+/* ```code block``` */
+.markdownContent pre {
+  background-color: #2d3748; /* 어두운 배경 */
+  color: #e2e8f0;
+  padding: 1.2rem;
+  border-radius: 8px;
+  overflow-x: auto; /* 가로 스크롤 */
+  margin-bottom: 1.5rem;
+}
+
+.markdownContent pre code {
+  background-color: transparent;
+  padding: 0;
+  color: inherit;
+  font-size: 1em;
+}
+
+/* 수평선 */
+/* --- */
+.markdownContent hr {
+  border: 0;
+  border-top: 2px solid #e2e8f0;
+  margin: 2.5rem 0;
+}
+
+/* 테이블 */
+.markdownContent table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 1.5rem;
+  border: 1px solid #e2e8f0;
+}
+
+.markdownContent th,
+.markdownContent td {
+  border: 1px solid #e2e8f0;
+  padding: 0.8rem 1rem;
+  text-align: left;
+}
+
+.markdownContent th {
+  background-color: #f7fafc;
+  font-weight: 600;
+}
+
+.markdownContent tr:nth-of-type(even) {
+  background-color: #f7fafc;
+}
+
+/* 이미지 */
+.markdownContent img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+  margin: 1rem 0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* ================================================================ */
+/* =============== Markdown Content Styles End Here =============== */
+/* ================================================================ */
