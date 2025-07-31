@@ -13,6 +13,7 @@ interface Participant {
   id: string;
   name: string;
   role: string;
+  status: string;
   profileImageUri?: string;
 }
 
@@ -124,7 +125,8 @@ const ScheduleDetailPage = () => {
         const participantData = data.participants.map((p: { userId: number; name: string; role: string; status: string }) => ({
           id: p.userId.toString(),
           name: p.name,
-          role: p.role
+          role: p.role,
+          status: p.status
         }));
         setParticipants(participantData);
 
@@ -276,7 +278,8 @@ const ScheduleDetailPage = () => {
         const updatedParticipantData = updatedData.participants.map((p: { userId: number; name: string; role: string; status: string }) => ({
           id: p.userId.toString(),
           name: p.name,
-          role: p.role
+          role: p.role,
+          status: p.status
         }));
         setParticipants(updatedParticipantData);
       }
@@ -492,17 +495,48 @@ const ScheduleDetailPage = () => {
           {/* 오른쪽 섹션 - 참여자 관리 */}
           <div className={styles.rightSection}>
             <div className={styles.participantsSection}>
-              <label className={styles.label}>참여자</label>
+              <label className={styles.label}>참여자 ({participants.length}명)</label>
+              
+              {/* 참여 상태 요약 */}
+              <div className={styles.participationSummary}>
+                <div className={styles.summaryItem}>
+                  <span className={`${styles.summaryDot} ${styles.summary참석}`}></span>
+                  <span className={styles.summaryText}>
+                    참석 {participants.filter(p => p.status === '참석').length}명
+                  </span>
+                </div>
+                <div className={styles.summaryItem}>
+                  <span className={`${styles.summaryDot} ${styles.summary불참}`}></span>
+                  <span className={styles.summaryText}>
+                    불참 {participants.filter(p => p.status === '불참').length}명
+                  </span>
+                </div>
+                <div className={styles.summaryItem}>
+                  <span className={`${styles.summaryDot} ${styles.summary미정}`}></span>
+                  <span className={styles.summaryText}>
+                    미정 {participants.filter(p => p.status === '미정' || !p.status).length}명
+                  </span>
+                </div>
+              </div>
+              
               <div className={styles.participantsList}>
                 {participants.map((participant, index) => (
-                  <div key={participant.id} className={styles.participantItem}>
+                  <div 
+                    key={participant.id} 
+                    className={`${styles.participantItem} ${styles[`participant${participant.status?.replace(/\s/g, '') || 'None'}`]}`}
+                  >
                     <div className={styles.participantInfo}>
                       <div className={styles.participantAvatar}>
                         <Image src="/logo.svg" alt={`${participant.name} profile`} width={40} height={40} />
                       </div>
                       <span className={styles.participantName}>{participant.name}</span>
                     </div>
-                    <span className={styles.participantRole}>{participant.role}</span>
+                    <div className={styles.participantDetails}>
+                      <span className={styles.participantRole}>{participant.role}</span>
+                      <span className={`${styles.participantStatus} ${styles[`status${participant.status?.replace(/\s/g, '') || 'None'}`]}`}>
+                        {participant.status || '미정'}
+                      </span>
+                    </div>
                   </div>
                 ))}
               </div>

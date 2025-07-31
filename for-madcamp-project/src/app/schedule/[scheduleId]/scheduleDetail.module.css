@@ -355,6 +355,48 @@
   padding: 1.5rem;
 }
 
+.participationSummary {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  padding: 0.75rem;
+  background: #ffffff;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+}
+
+.summaryItem {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+}
+
+.summaryDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.summary참석 {
+  background: #22c55e;
+}
+
+.summary불참 {
+  background: #ef4444;
+}
+
+.summary미정 {
+  background: #f59e0b;
+}
+
+.summaryText {
+  color: #374151;
+  font-weight: 500;
+}
+
 .participantsList {
   display: flex;
   flex-direction: column;
@@ -370,6 +412,9 @@
   background: #ffffff;
   border-radius: 8px;
   border: 1px solid #e5e7eb;
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
 }
 
 .participantInfo {
@@ -395,6 +440,13 @@
   color: #111827;
 }
 
+.participantDetails {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.25rem;
+}
+
 .participantRole {
   font-size: 0.8rem;
   color: #006D94;
@@ -402,6 +454,42 @@
   background: #e0f2fe;
   padding: 0.25rem 0.5rem;
   border-radius: 4px;
+}
+
+.participantStatus {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.2rem 0.5rem;
+  border-radius: 12px;
+  white-space: nowrap;
+}
+
+/* 참여자 카드 상태별 색상 */
+.participant참석 {
+  border-left: 4px solid #22c55e;
+  background: linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%);
+}
+
+.participant불참 {
+  border-left: 4px solid #ef4444;
+  background: linear-gradient(135deg, #fef2f2 0%, #ffffff 100%);
+}
+
+.participant미정 {
+  border-left: 4px solid #f59e0b;
+  background: linear-gradient(135deg, #fffbeb 0%, #ffffff 100%);
+}
+
+.participantNone {
+  border-left: 4px solid #9ca3af;
+  background: linear-gradient(135deg, #f9fafb 0%, #ffffff 100%);
+}
+
+/* 참여자 카드 호버 효과 */
+.participantItem:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
 }
 
 /* --- 액션 섹션 --- */
@@ -593,23 +681,23 @@
 }
 
 .status참석 {
-  background: #dcfce7;
-  color: #166534;
+  background: #22c55e;
+  color: white;
 }
 
 .status불참 {
-  background: #fee2e2;
-  color: #dc2626;
+  background: #ef4444;
+  color: white;
 }
 
 .status미정 {
-  background: #fef3c7;
-  color: #d97706;
+  background: #f59e0b;
+  color: white;
 }
 
 .statusNone {
-  background: #f3f4f6;
-  color: #6b7280;
+  background: #9ca3af;
+  color: white;
 }
 
 .participationButtons {
