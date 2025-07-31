@@ -9,10 +9,30 @@
 }
 
 .ipodContainer {
-    /* Container for the image, can be used for additional styling if needed */
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .ipodImage {
     max-width: 90vw; /* Ensure image is responsive on smaller screens */
     height: auto;   /* Maintain aspect ratio */
+}
+
+.spotifyPlayer {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    /* Move the player left to align with the SVG's screen area */
+    transform: translate(-104%, -25%); 
+    border-radius: 24px; /* Match the new SVG's rounded corners */
+    min-width: 400px; /* Adjust size to fit */
+    width: 40%; 
+    min-height: 500px; /* Standard height for this Spotify embed type */
+}
+
+.loadingText {
+    color: white;
+    font-size: 1.5rem;
 } 
