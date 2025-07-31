@@ -43,6 +43,8 @@ const ScrumPage = () => {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const dateListRef = useRef<HTMLDivElement>(null);
 
+
+
   // 날짜 관련 함수들
   const getCurrentMonth = () => {
     return selectedDate.getMonth() + 1;
@@ -276,6 +278,15 @@ const ScrumPage = () => {
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || (isEditMode ? 'Scrum update failed' : 'Scrum creation failed'));
+      }
+
+      const responseData = await response.json();
+
+      // 스크럼 생성/수정 후 진행도 업데이트가 성공했다면 ProgressBar 새로고침
+      if (responseData.progressCalculationSuccess && responseData.updatedProgress !== null) {
+        console.log(`Progress updated to ${responseData.updatedProgress}%`);
+        // 커스텀 이벤트를 발생시켜 ProgressBar가 새로고침되도록 함
+        window.dispatchEvent(new CustomEvent('progressUpdate'));
       }
 
       setShowModal(false);

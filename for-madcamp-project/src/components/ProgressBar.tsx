@@ -84,13 +84,24 @@ const ProgressBar = () => {
     }
   }, [user]);
 
+  // 진행도 업데이트 이벤트 리스너
+  useEffect(() => {
+    const handleProgressUpdate = () => {
+      console.log('Progress update event received, refreshing progress...');
+      fetchProgress();
+    };
+
+    window.addEventListener('progressUpdate', handleProgressUpdate);
+    return () => window.removeEventListener('progressUpdate', handleProgressUpdate);
+  }, [user]);
+
   // 진행도가 없거나 로딩 중이면 아무것도 표시하지 않음
   if (!user || loading || !progressData) {
     return null;
   }
 
   return (
-    <div className={styles.progressContainer}>
+    <div className={styles.progressContainer} data-progress-bar>
       <div className={styles.progressInfo}>
         <span className={styles.projectName}>{progressData.projectName}</span>
         <span className={styles.progressText}>{progressData.progress}%</span>
