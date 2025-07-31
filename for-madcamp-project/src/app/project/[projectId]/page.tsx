@@ -224,8 +224,9 @@ const ProjectDetailPage = () => {
         setIsEditMode(false);
         setNewImageFile(null);
 
-    } catch (err: any) {
-        setError(err.message);
+    } catch (err: unknown) {
+        const errorMessage = err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다.';
+        setError(errorMessage);
         console.error("Save failed:", err);
     }
   };
@@ -330,8 +331,9 @@ const ProjectDetailPage = () => {
       }
 
 
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다.';
+      setError(errorMessage);
       console.error(err);
     } finally {
       setLoading(false);
