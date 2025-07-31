@@ -25,7 +25,11 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     }
   }, [user, isLoading, pathname, router]);
 
-  const showHeader = !['/auth'].includes(pathname);
+  // Define paths where the header should be hidden
+  const noHeaderPaths = ['/auth'];
+  const musicPageRegex = /^\/class\/\d+\/[a-zA-Z0-9-]+$/;
+
+  const showHeader = !noHeaderPaths.includes(pathname) && !musicPageRegex.test(pathname);
   
   // 리디렉션 전에 보호된 콘텐츠가 잠시 보이는 것을 방지합니다.
   if (isLoading || (!user && !allowedPaths.includes(pathname))) {
